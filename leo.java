@@ -4,17 +4,21 @@ import javax.swing.*;
 import java.awt.Dimension;
 import java.awt.Container;
 import java.awt.event.ActionListener;
+import java.awt.Color;
 
-public class web extends JFrame{
+public class leo extends JFrame{
     JFrame frame;
     
-    public web() {
+    public leo() {
         frame = new JFrame();
-        frame.setTitle("Web");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
         frame.setMinimumSize(new Dimension(400, 300));
-        //frame.setLayout(null);
+
+        frame.setUndecorated(true);           
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JPanel titleBar = new JPanel(new BorderLayout());
+        titleBar.setBackground(new Color(30, 30, 30)); // color oscuro por ejemplo
+        titleBar.setPreferredSize(new Dimension(0, 40));
 
         JToolBar toolbar = new JToolBar();
         JButton exit = new JButton("Salir");
@@ -38,12 +42,12 @@ public class web extends JFrame{
         panel.setLayout(null);
 
         JButton btnVer = new JButton("Buscar");
-        btnVer.setBounds(67, 92, 94, 23);
+        btnVer.setBounds(217, 130, 94, 23);
         panel.add(btnVer);
     }
 
     public static void main(final String[] args) {
-        new web();
+        new leo();
     }
 
 }
