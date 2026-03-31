@@ -67,6 +67,52 @@ public class leo extends JFrame{
 
     public static void main(final String[] args) {
         new leo();
+        // Agregar la barra al JFrame
+        add(titleBar, BorderLayout.NORTH);
+
+
+
+
+
+        frame.setVisible(true);
+
+        
+    
+        JPanel panel = new JPanel();
+        panel.setBounds(0, 0, 434, 261);
+        frame.getContentPane().add(panel);
+        panel.setLayout(null);
+
+        JButton btnVer = new JButton("Buscar");
+        btnVer.setBounds(217, 130, 94, 23);
+        panel.add(btnVer);
+    }
+
+    public static void main(final String[] args) {
+        new leo();
+        // Agregar la barra al JFrame
+        add(titleBar, BorderLayout.NORTH);
+
+
+
+
+
+        frame.setVisible(true);
+
+        
+    
+        JPanel panel = new JPanel();
+        panel.setBounds(0, 0, 434, 261);
+        frame.getContentPane().add(panel);
+        panel.setLayout(null);
+
+        JButton btnVer = new JButton("Buscar");
+        btnVer.setBounds(217, 130, 94, 23);
+        panel.add(btnVer);
+    }
+
+    public static void main(final String[] args) {
+        new leo();
     }
 
 }
