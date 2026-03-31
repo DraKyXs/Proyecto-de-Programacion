@@ -12,7 +12,7 @@ public class leo extends JFrame {
         setLocationRelativeTo(null);             // Centra la ventana
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // ====================== BARRA DE TÍTULO PERSONALIZADA ======================
+        // ====================== BARRA DE TÍTULO PERSONALIZADA =======
         JPanel titleBar = new JPanel(new BorderLayout());
         titleBar.setBackground(new Color(30, 30, 30));
         titleBar.setPreferredSize(new Dimension(0, 40));
@@ -31,12 +31,10 @@ public class leo extends JFrame {
 
         titleBar.add(buttonsPanel, BorderLayout.EAST);
 
-        // ====================== AGREGAR BARRA AL FRAME ======================
-        add(titleBar, BorderLayout.NORTH);     // ← ESTO FALTABA
+        add(titleBar, BorderLayout.NORTH);
 
-        // ====================== CONTENIDO PRINCIPAL ======================
         JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(null);   // Layout absoluto (como tenías)
+        mainPanel.setLayout(null); 
 
         JButton btnVer = new JButton("Buscar");
         btnVer.setBounds(217, 130, 94, 23);
@@ -44,7 +42,6 @@ public class leo extends JFrame {
 
         add(mainPanel, BorderLayout.CENTER);
 
-        // Acciones de los botones
         btnMinimize.addActionListener(e -> setState(JFrame.ICONIFIED));
 
         btnMaximize.addActionListener(e -> {
@@ -58,7 +55,6 @@ public class leo extends JFrame {
         btnClose.addActionListener(e -> System.exit(0));
     }
 
-    // Método auxiliar para botones (recomendado)
     private JButton createTitleButton(String text, Color bgColor) {
         JButton btn = new JButton(text);
         btn.setBackground(bgColor);
