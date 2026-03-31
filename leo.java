@@ -1,10 +1,18 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
+import java.net.*;
 
-public class benja extends JFrame {
 
-    public benja() {
+
+
+
+public class leo extends JFrame {
+    public String url1 = "";
+
+    public leo() {
+
         // Configuración básica del JFrame
         setUndecorated(true);                    // Quita la barra nativa
         setSize(800, 600);
@@ -36,13 +44,29 @@ public class benja extends JFrame {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(null); 
 
-        JButton btnVer = new JButton("Ir");
-        btnVer.setBounds(528,251, 94, 23);
-        mainPanel.add(btnVer);
+        JButton botonBuscar = new JButton("Ir");
+        botonBuscar.setBounds(528,251, 94, 23);
+        mainPanel.add(botonBuscar);
 
         JTextField buscador = new JTextField();
         buscador.setBounds(224,251, 297, 25);
         mainPanel.add(buscador);
+
+        botonBuscar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                url1 = buscador.getText();
+                
+            }
+
+
+        });
+
+
+
+
+
+
+
 
         add(mainPanel, BorderLayout.CENTER);
 
