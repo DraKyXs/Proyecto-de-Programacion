@@ -1,10 +1,7 @@
-import java.awt.BorderLayout;
 import java.util.*;
 import javax.swing.*;
-import java.awt.Dimension;
-import java.awt.Container;
-import java.awt.event.ActionListener;
-import java.awt.Color;
+import java.awt.*;
+import java.awt.event.*;
 
 public class leo extends JFrame{
     JFrame frame;
@@ -20,17 +17,39 @@ public class leo extends JFrame{
         titleBar.setBackground(new Color(30, 30, 30)); // color oscuro por ejemplo
         titleBar.setPreferredSize(new Dimension(0, 40));
 
-        JToolBar toolbar = new JToolBar();
-        JButton exit = new JButton("Salir");
-        JButton min = new JButton("Minimizar");
-        JButton max = new JButton("Maximizar");
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        buttonsPanel.setOpaque(false);   // transparente
 
-        toolbar.add(exit);
-        toolbar.add(min);
-        toolbar.add(max);
+        // Botones con colores diferentes
+        JButton btnMinimize = createButton("−", new Color(255, 180, 0));   // Amarillo/Naranja
+        JButton btnMaximize = createButton("□", new Color(0, 200, 80));    // Verde
+        JButton btnClose    = createButton("×", new Color(220, 50, 50));   // Rojo
 
-        Container pane = this.getContentPane();
-        frame.add(toolbar, BorderLayout.NORTH);
+        // Funciones de cada botón
+        btnMinimize.addActionListener(e -> setState(JFrame.ICONIFIED));
+        
+        btnMaximize.addActionListener(e -> {
+            if (getExtendedState() == JFrame.MAXIMIZED_BOTH) {
+                setExtendedState(JFrame.NORMAL);
+            } else {
+                setExtendedState(JFrame.MAXIMIZED_BOTH);
+            }
+        });
+        
+        btnClose.addActionListener(e -> System.exit(0));
+
+        buttonsPanel.add(btnMinimize);
+        buttonsPanel.add(btnMaximize);
+        buttonsPanel.add(btnClose);
+
+        titleBar.add(buttonsPanel, BorderLayout.EAST);
+
+        // Agregar la barra al JFrame
+        add(titleBar, BorderLayout.NORTH);
+
+
+
+
 
         frame.setVisible(true);
 
