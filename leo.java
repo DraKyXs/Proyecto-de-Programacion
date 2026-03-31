@@ -36,9 +36,13 @@ public class benja extends JFrame {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(null); 
 
-        JButton btnVer = new JButton("Buscar");
-        btnVer.setBounds(217, 130, 94, 23);
+        JButton btnVer = new JButton("Ir");
+        btnVer.setBounds(528,251, 94, 23);
         mainPanel.add(btnVer);
+
+        JTextField buscador = new JTextField();
+        buscador.setBounds(224,251, 297, 25);
+        mainPanel.add(buscador);
 
         add(mainPanel, BorderLayout.CENTER);
 
@@ -50,6 +54,10 @@ public class benja extends JFrame {
             } else {
                 setExtendedState(JFrame.MAXIMIZED_BOTH);
             }
+
+
+
+
         });
 
         btnClose.addActionListener(e -> System.exit(0));
@@ -66,9 +74,10 @@ public class benja extends JFrame {
         return btn;
     }
 
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new leo().setVisible(true);
+            new benja().setVisible(true);
         });
     }
 }
