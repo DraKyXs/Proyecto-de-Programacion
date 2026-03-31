@@ -1,71 +1,74 @@
-import java.util.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class benja extends JFrame{
-    JFrame frame;
-    
-    public benja() { //Recordar cambiar nombre de usuario
-        frame = new JFrame();
-        frame.setTitle("Web");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 600);
-        frame.setMinimumSize(new Dimension(400, 300));
-        //frame.setLayout(null);
+public class benja extends JFrame {
 
-        JToolBar toolbar = new JToolBar();
-        JButton exit = new JButton("Salir");
-        JButton min = new JButton("Minimizar");
-        JButton max = new JButton("Maximizar");
-        
-        Color azulBonito = new Color(70, 130, 180); //Color nuevo para que se note
+    public benja() {
+        // Configuración básica del JFrame
+        setUndecorated(true);                    // Quita la barra nativa
+        setSize(800, 600);
+        setMinimumSize(new Dimension(400, 300));
+        setLocationRelativeTo(null);             // Centra la ventana
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        MouseAdapter hoverEfecto = new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { 
-                JButton b = (JButton)e.getSource();
-                b.setContentAreaFilled(true); // Esto arregla que no cambie el color
-                b.setBackground(azulBonito); 
-                b.setForeground(Color.WHITE); // Texto blanco para que se vea bien
-            }
-            public void mouseExited(MouseEvent e) { 
-                JButton b = (JButton)e.getSource();
-                b.setBackground(null); 
-                b.setForeground(Color.BLACK); // Vuelve a texto negro
-            }
-        };
+        // ====================== BARRA DE TÍTULO PERSONALIZADA =======
+        JPanel titleBar = new JPanel(new BorderLayout());
+        titleBar.setBackground(new Color(30, 30, 30));
+        titleBar.setPreferredSize(new Dimension(0, 40));
 
-        // Aplicamos el efecto y quitamos el borde pintado para que el color sea total
-        JButton[] botones = {exit, min, max};
-        for(JButton b : botones) {
-            b.addMouseListener(hoverEfecto);
-            b.setFocusPainted(false);
-            b.setContentAreaFilled(false); // Para que el cambio sea notable
-        }
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        buttonsPanel.setOpaque(false);
 
-        toolbar.add(exit);
-        toolbar.add(min);
-        toolbar.add(max);
+        // Botones
+        JButton btnMinimize = createTitleButton("−", new Color(255, 180, 0));
+        JButton btnMaximize = createTitleButton("□", new Color(0, 200, 80));
+        JButton btnClose    = createTitleButton("×", new Color(220, 50, 50));
 
-        Container pane = this.getContentPane();
-        frame.add(toolbar, BorderLayout.NORTH);
+        buttonsPanel.add(btnMinimize);
+        buttonsPanel.add(btnMaximize);
+        buttonsPanel.add(btnClose);
 
-        frame.setVisible(true);
+        titleBar.add(buttonsPanel, BorderLayout.EAST);
 
-        
-    
-        JPanel panel = new JPanel();
-        panel.setBounds(0, 0, 434, 261);
-        frame.getContentPane().add(panel);
-        panel.setLayout(null);
+        add(titleBar, BorderLayout.NORTH);
+
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(null); 
 
         JButton btnVer = new JButton("Buscar");
-        btnVer.setBounds(67, 92, 94, 23);
-        panel.add(btnVer);
+        btnVer.setBounds(217, 130, 94, 23);
+        mainPanel.add(btnVer);
+
+        add(mainPanel, BorderLayout.CENTER);
+
+        btnMinimize.addActionListener(e -> setState(JFrame.ICONIFIED));
+
+        btnMaximize.addActionListener(e -> {
+            if (getExtendedState() == JFrame.MAXIMIZED_BOTH) {
+                setExtendedState(JFrame.NORMAL);
+            } else {
+                setExtendedState(JFrame.MAXIMIZED_BOTH);
+            }
+        });
+
+        btnClose.addActionListener(e -> System.exit(0));
     }
 
-    public static void main(final String[] args) {
-        new benja();
+    private JButton createTitleButton(String text, Color bgColor) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bgColor);
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("Arial", Font.BOLD, 18));
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setPreferredSize(new Dimension(45, 40));
+        return btn;
     }
 
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            new leo().setVisible(true);
+        });
+    }
 }
