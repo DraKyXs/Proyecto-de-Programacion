@@ -5,14 +5,14 @@ import java.awt.event.*;
 public class leo extends JFrame {
 
     public leo() {
-        // Configuración básica del JFrame
-        setUndecorated(true);                    // Quita la barra nativa
-        setSize(800, 600);
+        //con este setUndecorated se elimina la barra de titulo donde se encuentran los 3 botones principales de la ventana
+        setUndecorated(true);                    
+        setBounds(0,0,800, 600); //Con estos setBounds y setMinimumSize se crea la posición XY donde se abre la ventana, el tamaño con el que se abre y el tamaño minimo de este
         setMinimumSize(new Dimension(400, 300));
-        setLocationRelativeTo(null);             // Centra la ventana
+        setLocationRelativeTo(null);             
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // ====================== BARRA DE TÍTULO PERSONALIZADA =======
+        // ======================================================================= BARRA DE TÍTULO PERSONALIZADA =======================================================================================================
         JPanel titleBar = new JPanel(new BorderLayout());
         titleBar.setBackground(new Color(30, 30, 30));
         titleBar.setPreferredSize(new Dimension(0, 40));
@@ -42,7 +42,9 @@ public class leo extends JFrame {
 
         add(mainPanel, BorderLayout.CENTER);
 
-        btnMinimize.addActionListener(e -> setState(JFrame.ICONIFIED));
+        btnMinimize.addActionListener(e -> {
+            setSize(400, 300);
+        });
 
         btnMaximize.addActionListener(e -> {
             if (getExtendedState() == JFrame.MAXIMIZED_BOTH) {
