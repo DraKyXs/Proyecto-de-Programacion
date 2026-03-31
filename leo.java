@@ -52,7 +52,7 @@ public class leo extends JFrame {
         buscador.setBounds(224,251, 297, 25);
         mainPanel.add(buscador);
 
-        botonBuscar.addActionListener(new ActionListener() {
+        /*botonBuscar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 url1 = buscador.getText();
                 
@@ -60,15 +60,13 @@ public class leo extends JFrame {
 
 
         });
-
-
-
-
-
-
-
+        */
 
         add(mainPanel, BorderLayout.CENTER);
+
+
+
+        //Acciones botones barra de titulo
 
         btnMinimize.addActionListener(e -> setState(JFrame.ICONIFIED));
 
@@ -101,7 +99,7 @@ public class leo extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new benja().setVisible(true);
+            new leo().setVisible(true);
         });
     }
 }
