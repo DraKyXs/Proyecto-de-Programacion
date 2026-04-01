@@ -68,7 +68,7 @@ public class benja extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            new leo().setVisible(true);
+            new benja().setVisible(true);
         });
     }
 }
