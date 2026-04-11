@@ -11,20 +11,22 @@ public class leo extends JFrame {
     private JButton botonBuscar;
 
     public leo() {
+        initializeFrame();
+        add(createTitleBar(), BorderLayout.NORTH);
+        setJMenuBar(createMenuBar());
+        add(createMainPanel(), BorderLayout.CENTER);
+        actualizarBoton();
+    }
 
-
-
-        //Realizamos las dimensiones mediante un setSize dandole una dimensión inicial y una dimensión minima de 400x300
-        //A su vez, eliminamos la barra de titulo realizando un setUndecorated para así crear la nuestra
-        setUndecorated(true);                    
+    private void initializeFrame() {
+        setUndecorated(true);
         setSize(800, 600);
         setMinimumSize(new Dimension(400, 300));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
 
-
-
-        // ========================================================== BARRA DE TÍTULO PERSONALIZADA =====================================================================================
+    private JPanel createTitleBar() {
         JPanel titleBar = new JPanel(new BorderLayout());
         titleBar.setBackground(new Color(30, 30, 30));
         titleBar.setPreferredSize(new Dimension(0, 40));
@@ -34,69 +36,59 @@ public class leo extends JFrame {
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         buttonsPanel.setOpaque(false);
 
-        // Botones
         JButton btnmin = CreadorBotones("−", new Color(255, 180, 0));
         JButton btnmax = CreadorBotones("▢", new Color(0, 200, 80));
-        JButton btncerrar    = CreadorBotones("×", new Color(220, 50, 50));
-
-        buttonsPanel.add(btnmin);
-        buttonsPanel.add(btnmax);
-        buttonsPanel.add(btncerrar);
-
-
-        titleBar.add(buttonsPanel, BorderLayout.EAST);
-        add(titleBar, BorderLayout.NORTH);
-
-        // ====================== BARRA DE MENÚ ======================
-        JMenuBar menuBar = new JMenuBar();
-        JMenu menuArchivo = new JMenu("Archivo");
-        JMenuItem itemSalir = new JMenuItem("Salir");
-        itemSalir.addActionListener(e -> System.exit(0));
-        menuArchivo.add(itemSalir);
-        menuBar.add(menuArchivo);
-        setJMenuBar(menuBar);
-
-        // ====================== PANEL PRINCIPAL ======================
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(null);
-
-        // Campo de texto
-        buscador = new JTextField();
-        buscador.setBounds(224, 251, 297, 25);
-        mainPanel.add(buscador);
-
-        // Botón Ir
-        botonBuscar = new JButton("Ir");
-        botonBuscar.setBounds(528, 251, 94, 23);
-        mainPanel.add(botonBuscar);
-
-        // Listener del botón "Ir"
-        botonBuscar.addActionListener(e -> procesarURL());
-
-        // Listener para habilitar/deshabilitar el botón según el texto
-        buscador.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { actualizarBoton(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { actualizarBoton(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { actualizarBoton(); }
-        });
-        add(mainPanel, BorderLayout.CENTER);
-
+        JButton btncerrar = CreadorBotones("×", new Color(220, 50, 50));
 
         btnmin.addActionListener(e -> setSize(400, 300));
-
         btnmax.addActionListener(e -> {
             if (getExtendedState() == JFrame.MAXIMIZED_BOTH) {
                 setSize(800, 600);
             } else {
                 setExtendedState(JFrame.MAXIMIZED_BOTH);
             }
-
-
         });
         btncerrar.addActionListener(e -> System.exit(0));
 
-        // Estado inicial del botón
-        actualizarBoton();
+        buttonsPanel.add(btnmin);
+        buttonsPanel.add(btnmax);
+        buttonsPanel.add(btncerrar);
+
+        titleBar.add(buttonsPanel, BorderLayout.EAST);
+        return titleBar;
+    }
+
+    private JMenuBar createMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menuArchivo = new JMenu("Archivo");
+        JMenuItem itemSalir = new JMenuItem("Salir");
+        itemSalir.addActionListener(e -> System.exit(0));
+        menuArchivo.add(itemSalir);
+        menuBar.add(menuArchivo);
+        return menuBar;
+    }
+
+    private JPanel createMainPanel() {
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(null);
+
+        buscador = new JTextField();
+        buscador.setBounds(224, 251, 297, 25);
+        mainPanel.add(buscador);
+
+        botonBuscar = new JButton("Ir");
+        botonBuscar.setBounds(528, 251, 94, 23);
+        mainPanel.add(botonBuscar);
+
+        botonBuscar.addActionListener(e -> procesarURL());
+
+        buscador.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { actualizarBoton(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { actualizarBoton(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { actualizarBoton(); }
+        });
+
+        return mainPanel;
     }
 
     // ====================== PROCESAR URL LOCAL ======================
