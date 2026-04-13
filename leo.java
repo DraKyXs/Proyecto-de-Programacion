@@ -12,23 +12,34 @@ public class leo extends JFrame {
 
     public leo() {
         initializeFrame();
+        
+        // --- BARRA DE TÍTULO ---
         add(createTitleBar(), BorderLayout.NORTH);
-        setJMenuBar(createMenuBar());
+        
+        // --- PANEL PRINCIPAL ---
         add(createMainPanel(), BorderLayout.CENTER);
+        
         actualizarBoton();
     }
 
     private void initializeFrame() {
         setUndecorated(true);
-        setSize(800, 600);
-        setMinimumSize(new Dimension(400, 300));
+        setSize(820, 620); 
+        
+        // TAMAÑO MÍNIMO SOLICITADO
+        setMinimumSize(new Dimension(400, 300)); 
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
+    // =========================================================================
+    // BARRA DE TÍTULO
+    // =========================================================================
     private JPanel createTitleBar() {
         JPanel titleBar = new JPanel(new BorderLayout());
-        titleBar.setBackground(new Color(30, 30, 30));
+        
+        Color colorBarra = new Color(220, 220, 220); 
+        titleBar.setBackground(colorBarra); 
         titleBar.setPreferredSize(new Dimension(0, 40));
 
         moverVentana(titleBar);
@@ -36,18 +47,25 @@ public class leo extends JFrame {
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         buttonsPanel.setOpaque(false);
 
-        JButton btnmin = CreadorBotones("−", new Color(255, 180, 0));
-        JButton btnmax = CreadorBotones("▢", new Color(0, 200, 80));
-        JButton btncerrar = CreadorBotones("×", new Color(220, 50, 50));
+        JButton btnmin = CreadorBotones("−", colorBarra);
+        JButton btnmax = CreadorBotones("□", colorBarra);
+        JButton btncerrar = CreadorBotones("×", colorBarra);
 
-        btnmin.addActionListener(e -> setSize(400, 300));
+        aplicarEfectoHover(btnmin, new Color(200, 200, 200), new Color(80, 80, 80)); 
+        aplicarEfectoHover(btnmax, new Color(200, 200, 200), new Color(80, 80, 80));
+        aplicarEfectoHover(btncerrar, new Color(232, 17, 35), Color.WHITE); 
+
+        btnmin.addActionListener(e -> setState(JFrame.ICONIFIED)); 
+        
         btnmax.addActionListener(e -> {
             if (getExtendedState() == JFrame.MAXIMIZED_BOTH) {
-                setSize(800, 600);
+                setSize(820, 620);
+                setLocationRelativeTo(null); 
             } else {
                 setExtendedState(JFrame.MAXIMIZED_BOTH);
             }
         });
+        
         btncerrar.addActionListener(e -> System.exit(0));
 
         buttonsPanel.add(btnmin);
@@ -58,30 +76,97 @@ public class leo extends JFrame {
         return titleBar;
     }
 
-    private JMenuBar createMenuBar() {
-        JMenuBar menuBar = new JMenuBar();
-        JMenu menuArchivo = new JMenu("Archivo");
-        JMenuItem itemSalir = new JMenuItem("Salir");
-        itemSalir.addActionListener(e -> System.exit(0));
-        menuArchivo.add(itemSalir);
-        menuBar.add(menuArchivo);
-        return menuBar;
+    private void aplicarEfectoHover(JButton boton, Color hoverBg, Color hoverFg) {
+        Color bgColorOriginal = boton.getBackground();
+        Color fgColorOriginal = boton.getForeground();
+
+        boton.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                boton.setBackground(hoverBg);
+                boton.setForeground(hoverFg);
+            }
+            public void mouseExited(MouseEvent evt) {
+                boton.setBackground(bgColorOriginal);
+                boton.setForeground(fgColorOriginal);
+            }
+        });
     }
 
+    private JButton CreadorBotones(String text, Color bgColor) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bgColor);
+        btn.setForeground(new Color(80, 80, 80)); 
+        btn.setFont(new Font("Arial", Font.BOLD, 18));
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setPreferredSize(new Dimension(45, 40));
+        return btn;
+    }
+
+    // =========================================================================
+    // PANEL PRINCIPAL Y COMPONENTES
+    // =========================================================================
     private JPanel createMainPanel() {
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(null);
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        
+        mainPanel.setBackground(new Color(235, 235, 235));
+        mainPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(12, 12, 12, 12), 
+            BorderFactory.createLineBorder(new Color(190, 190, 190), 2)
+        ));
 
-        buscador = new JTextField();
-        buscador.setBounds(224, 251, 297, 25);
-        mainPanel.add(buscador);
+        // APLICAMOS LA FUNCIÓN DE REDIMENSIONAMIENTO CORREGIDA AQUÍ
+        hacerRedimensionable(mainPanel);
 
-        botonBuscar = new JButton("Ir");
-        botonBuscar.setBounds(528, 251, 94, 23);
-        mainPanel.add(botonBuscar);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10); 
 
-        botonBuscar.addActionListener(e -> procesarURL());
+        buscador = new JTextField(25); 
+        buscador.setBackground(Color.WHITE);
+        buscador.setForeground(new Color(60, 60, 60));
+        buscador.setCaretColor(new Color(100, 100, 100));
+        buscador.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(180, 180, 180), 1),
+            BorderFactory.createEmptyBorder(6, 10, 6, 10) 
+        ));
+        
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL; 
+        gbc.weightx = 1.0; 
+        mainPanel.add(buscador, gbc);
 
+        botonBuscar = new JButton("Ir"); 
+        botonBuscar.setFont(new Font("Arial", Font.BOLD, 13));
+        botonBuscar.setFocusPainted(false);
+        botonBuscar.setBorderPainted(false);
+        botonBuscar.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+
+        botonBuscar.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                if(!buscador.getText().trim().isEmpty()) {
+                    botonBuscar.setBackground(new Color(41, 128, 185)); 
+                }
+            }
+            public void mouseExited(MouseEvent evt) {
+                if(!buscador.getText().trim().isEmpty()) {
+                    botonBuscar.setBackground(new Color(52, 73, 94)); 
+                }
+            }
+        });
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.NONE; 
+        gbc.weightx = 0; 
+        mainPanel.add(botonBuscar, gbc);
+
+        botonBuscar.addActionListener(e -> {
+            if(!buscador.getText().trim().isEmpty()){
+                procesarURL();
+            }
+        });
+        
         buscador.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { actualizarBoton(); }
             public void removeUpdate(javax.swing.event.DocumentEvent e) { actualizarBoton(); }
@@ -91,7 +176,58 @@ public class leo extends JFrame {
         return mainPanel;
     }
 
-    // ====================== PROCESAR URL LOCAL ======================
+    // =========================================================================
+    // REDIMENSIONAR VENTANA DESDE LA ESQUINA (VERSIÓN FLUIDA)
+    // =========================================================================
+    private void hacerRedimensionable(JPanel panel) {
+        MouseAdapter resizer = new MouseAdapter() {
+            boolean resizing = false;
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                // Si hace clic en la esquina inferior derecha (área de 15x15 píxeles)
+                if (e.getX() >= panel.getWidth() - 15 && e.getY() >= panel.getHeight() - 15) {
+                    resizing = true;
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                resizing = false;
+            }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (resizing) {
+                    // Calculamos el tamaño midiendo la distancia del ratón a la esquina superior de la ventana
+                    int newWidth = e.getXOnScreen() - getX();
+                    int newHeight = e.getYOnScreen() - getY();
+
+                    // Aplicamos el límite mínimo (400x300) sin bloquear la posición del ratón
+                    newWidth = Math.max(400, newWidth);
+                    newHeight = Math.max(300, newHeight);
+
+                    setSize(newWidth, newHeight);
+                    revalidate();
+                }
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                // Cambiar el cursor a flechas de redimensión al acercarse a la esquina
+                if (e.getX() >= panel.getWidth() - 15 && e.getY() >= panel.getHeight() - 15) {
+                    panel.setCursor(new Cursor(Cursor.SE_RESIZE_CURSOR));
+                } else {
+                    panel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+            }
+        };
+
+        panel.addMouseListener(resizer);
+        panel.addMouseMotionListener(resizer);
+    }
+
+    // ====================== LÓGICA DE LA APLICACIÓN ======================
     private void procesarURL() {
         String texto = buscador.getText().trim();
 
@@ -100,7 +236,6 @@ public class leo extends JFrame {
         }
 
         try {
-            // Validar que sea una URL file:///
             URI uri = new URI(texto);
             if (!"file".equalsIgnoreCase(uri.getScheme())) {
                 JOptionPane.showMessageDialog(this, 
@@ -110,14 +245,11 @@ public class leo extends JFrame {
                 return;
             }
 
-            // Convertir URI a File
             File archivo = new File(uri);
 
             if (archivo.exists()) {
-                // El archivo existe → intentar abrirlo
                 Desktop.getDesktop().open(archivo);
             } else {
-                // El archivo NO existe
                 JOptionPane.showMessageDialog(this, 
                     "El archivo no existe:\n" + archivo.getAbsolutePath(), 
                     "Archivo no encontrado", 
@@ -132,24 +264,21 @@ public class leo extends JFrame {
         }
     }
 
-    // ====================== HABILITAR/DESABILITAR BOTÓN ======================
     private void actualizarBoton() {
-        botonBuscar.setEnabled(!buscador.getText().trim().isEmpty());
+        boolean tieneTexto = !buscador.getText().trim().isEmpty();
+        
+        if(!tieneTexto) {
+            botonBuscar.setBackground(new Color(180, 180, 180)); 
+            botonBuscar.setForeground(Color.WHITE); 
+            botonBuscar.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
+        } else {
+            botonBuscar.setBackground(new Color(52, 73, 94)); 
+            botonBuscar.setForeground(Color.WHITE); 
+            botonBuscar.setCursor(new Cursor(Cursor.HAND_CURSOR)); 
         }
-
-    private JButton CreadorBotones(String text, Color bgColor) {
-        JButton btn = new JButton(text);
-        btn.setBackground(bgColor);
-        btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("Arial", Font.BOLD, 18));
-        btn.setBorderPainted(false);
-        btn.setFocusPainted(false);
-        btn.setPreferredSize(new Dimension(45, 40));
-        return btn;
     }
 
     private void moverVentana(JPanel titleBar) {
-        
         final int[] mouseX= new int[1];
         final int[] mouseY= new int[1];
 
@@ -174,4 +303,3 @@ public class leo extends JFrame {
         });
     }
 }
-
