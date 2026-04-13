@@ -9,15 +9,21 @@ public class leo extends JFrame {
 
     private JTextField buscador;
     private JButton botonBuscar;
+    
+    // NUEVA VARIABLE PARA LA BARRA DE ESTADO
+    private JLabel etiquetaEstado; 
 
     public leo() {
         initializeFrame();
         
-        // --- BARRA DE TÍTULO ---
+        // --- BARRA DE TÍTULO (NORTE) ---
         add(createTitleBar(), BorderLayout.NORTH);
         
-        // --- PANEL PRINCIPAL ---
+        // --- PANEL PRINCIPAL (CENTRO) ---
         add(createMainPanel(), BorderLayout.CENTER);
+        
+        // --- BARRA DE ESTADO (SUR) ---
+        add(createStatusBar(), BorderLayout.SOUTH);
         
         actualizarBoton();
     }
@@ -25,8 +31,6 @@ public class leo extends JFrame {
     private void initializeFrame() {
         setUndecorated(true);
         setSize(820, 620); 
-        
-        // TAMAÑO MÍNIMO SOLICITADO
         setMinimumSize(new Dimension(400, 300)); 
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -104,7 +108,25 @@ public class leo extends JFrame {
     }
 
     // =========================================================================
-    // PANEL PRINCIPAL Y COMPONENTES
+    // BARRA DE ESTADO (NUEVO MÉTODO)
+    // =========================================================================
+    private JPanel createStatusBar() {
+        // FlowLayout.RIGHT alinea el contenido a la derecha de la pantalla
+        JPanel statusBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 5));
+        
+        // Mismo color que la barra de título para enmarcar la aplicación
+        statusBar.setBackground(new Color(220, 220, 220)); 
+        
+        etiquetaEstado = new JLabel("Listo");
+        etiquetaEstado.setForeground(new Color(100, 100, 100)); // Texto gris sutil
+        etiquetaEstado.setFont(new Font("Arial", Font.BOLD, 12));
+        
+        statusBar.add(etiquetaEstado);
+        return statusBar;
+    }
+
+    // =========================================================================
+    // PANEL PRINCIPAL
     // =========================================================================
     private JPanel createMainPanel() {
         JPanel mainPanel = new JPanel(new GridBagLayout());
@@ -115,7 +137,6 @@ public class leo extends JFrame {
             BorderFactory.createLineBorder(new Color(190, 190, 190), 2)
         ));
 
-        // APLICAMOS LA FUNCIÓN DE REDIMENSIONAMIENTO CORREGIDA AQUÍ
         hacerRedimensionable(mainPanel);
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -177,7 +198,7 @@ public class leo extends JFrame {
     }
 
     // =========================================================================
-    // REDIMENSIONAR VENTANA DESDE LA ESQUINA (VERSIÓN FLUIDA)
+    // REDIMENSIONAR VENTANA
     // =========================================================================
     private void hacerRedimensionable(JPanel panel) {
         MouseAdapter resizer = new MouseAdapter() {
@@ -185,7 +206,6 @@ public class leo extends JFrame {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                // Si hace clic en la esquina inferior derecha (área de 15x15 píxeles)
                 if (e.getX() >= panel.getWidth() - 15 && e.getY() >= panel.getHeight() - 15) {
                     resizing = true;
                 }
@@ -199,11 +219,9 @@ public class leo extends JFrame {
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (resizing) {
-                    // Calculamos el tamaño midiendo la distancia del ratón a la esquina superior de la ventana
                     int newWidth = e.getXOnScreen() - getX();
                     int newHeight = e.getYOnScreen() - getY();
 
-                    // Aplicamos el límite mínimo (400x300) sin bloquear la posición del ratón
                     newWidth = Math.max(400, newWidth);
                     newHeight = Math.max(300, newHeight);
 
@@ -214,7 +232,6 @@ public class leo extends JFrame {
 
             @Override
             public void mouseMoved(MouseEvent e) {
-                // Cambiar el cursor a flechas de redimensión al acercarse a la esquina
                 if (e.getX() >= panel.getWidth() - 15 && e.getY() >= panel.getHeight() - 15) {
                     panel.setCursor(new Cursor(Cursor.SE_RESIZE_CURSOR));
                 } else {
@@ -227,7 +244,7 @@ public class leo extends JFrame {
         panel.addMouseMotionListener(resizer);
     }
 
-    // ====================== LÓGICA DE LA APLICACIÓN ======================
+    // ====================== LÓGICA DE LA APLICACIÓN (ACTUALIZADA) ======================
     private void procesarURL() {
         String texto = buscador.getText().trim();
 
@@ -235,33 +252,45 @@ public class leo extends JFrame {
             return;
         }
 
-        try {
-            URI uri = new URI(texto);
-            if (!"file".equalsIgnoreCase(uri.getScheme())) {
-                JOptionPane.showMessageDialog(this, 
-                    "La URL debe ser un archivo local (debe comenzar con file:///)", 
-                    "URL inválida", 
-                    JOptionPane.WARNING_MESSAGE);
-                return;
-            }
+        // 1. Cambiamos el texto a "Cargando..."
+        etiquetaEstado.setText("Cargando...");
+        etiquetaEstado.setForeground(new Color(41, 128, 185)); // Ponemos el texto en azul mientras carga
 
-            File archivo = new File(uri);
+        // 2. Usamos un Timer de medio segundo (500 ms) para que el usuario alcance a verlo
+        Timer timer = new Timer(500, e -> {
+            try {
+                URI uri = new URI(texto);
+                if (!"file".equalsIgnoreCase(uri.getScheme())) {
+                    JOptionPane.showMessageDialog(this, 
+                        "La URL debe ser un archivo local (debe comenzar con file:///)", 
+                        "URL inválida", 
+                        JOptionPane.WARNING_MESSAGE);
+                } else {
+                    File archivo = new File(uri);
 
-            if (archivo.exists()) {
-                Desktop.getDesktop().open(archivo);
-            } else {
+                    if (archivo.exists()) {
+                        Desktop.getDesktop().open(archivo);
+                    } else {
+                        JOptionPane.showMessageDialog(this, 
+                            "El archivo no existe:\n" + archivo.getAbsolutePath(), 
+                            "Archivo no encontrado", 
+                            JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, 
-                    "El archivo no existe:\n" + archivo.getAbsolutePath(), 
-                    "Archivo no encontrado", 
+                    "URL inválida o error al procesar el archivo:\n" + ex.getMessage(), 
+                    "Error", 
                     JOptionPane.ERROR_MESSAGE);
             }
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, 
-                "URL inválida o error al procesar el archivo:\n" + ex.getMessage(), 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
-        }
+            
+            // 3. Volvemos al estado original al terminar
+            etiquetaEstado.setText("Listo");
+            etiquetaEstado.setForeground(new Color(100, 100, 100)); // Vuelve al gris original
+        });
+        
+        timer.setRepeats(false); // Importante: Que el temporizador solo se ejecute 1 vez
+        timer.start();
     }
 
     private void actualizarBoton() {
