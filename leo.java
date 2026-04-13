@@ -5,52 +5,81 @@ import java.io.*;
 import java.net.*;
 
 public class leo extends JFrame {
-    public String url1 = "";
-
-    private JTextField buscador;
-    private JButton botonBuscar;
     
-    // NUEVA VARIABLE PARA LA BARRA DE ESTADO
-    private JLabel etiquetaEstado; 
+    private JTabbedPane sistemaPestanas;
+    private JLabel etiquetaEstado;
+    private int contadorPestanas = 1;
 
     public leo() {
         initializeFrame();
         
-        // --- BARRA DE TÍTULO (NORTE) ---
+        // --- BARRA DE TÍTULO PRINCIPAL ---
         add(createTitleBar(), BorderLayout.NORTH);
         
-        // --- PANEL PRINCIPAL (CENTRO) ---
-        add(createMainPanel(), BorderLayout.CENTER);
+        // --- SISTEMA DE PESTAÑAS ---
+        sistemaPestanas = new JTabbedPane();
+        sistemaPestanas.setBackground(new Color(235, 235, 235));
+        hacerRedimensionable(sistemaPestanas); 
+        add(sistemaPestanas, BorderLayout.CENTER);
         
-        // --- BARRA DE ESTADO (SUR) ---
+        // --- BARRA DE ESTADO GLOBAL ---
         add(createStatusBar(), BorderLayout.SOUTH);
         
-        actualizarBoton();
+        // 1. CREAMOS LA "PESTAÑA FALSA" (CON EL "+" GRANDE Y ELEGANTE)
+        sistemaPestanas.addTab("", new JPanel()); 
+        
+        JLabel btnSumar = new JLabel("+"); 
+        btnSumar.setFont(new Font("Arial", Font.PLAIN, 24)); 
+        btnSumar.setForeground(new Color(100, 100, 100));
+        btnSumar.setHorizontalAlignment(SwingConstants.CENTER);
+        btnSumar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnSumar.setPreferredSize(new Dimension(35, 20));
+
+        // LA SOLUCIÓN: Agregamos "mousePressed" directamente al "+" para que detecte el clic
+        btnSumar.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { btnSumar.setForeground(new Color(46, 204, 113)); }
+            public void mouseExited(MouseEvent e) { btnSumar.setForeground(new Color(100, 100, 100)); }
+            public void mousePressed(MouseEvent e) { abrirNuevaPestana(); } // <--- ¡AQUÍ ESTÁ LA MAGIA!
+        });
+
+        sistemaPestanas.setTabComponentAt(0, btnSumar); 
+
+        // Por si hacen clic en el borde de la pestaña y no exactamente en el símbolo "+"
+        sistemaPestanas.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                int indiceClic = sistemaPestanas.indexAtLocation(e.getX(), e.getY());
+                if (indiceClic == sistemaPestanas.getTabCount() - 1) {
+                    abrirNuevaPestana();
+                }
+            }
+        });
+        
+        abrirNuevaPestana();
     }
 
     private void initializeFrame() {
         setUndecorated(true);
-        setSize(820, 620); 
-        setMinimumSize(new Dimension(400, 300)); 
+        setSize(1000, 700); 
+        setMinimumSize(new Dimension(500, 400)); 
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     // =========================================================================
-    // BARRA DE TÍTULO
+    // BARRA DE TÍTULO (CON LOS ICONOS ANTIGUOS RESTAURADOS)
     // =========================================================================
     private JPanel createTitleBar() {
         JPanel titleBar = new JPanel(new BorderLayout());
-        
         Color colorBarra = new Color(220, 220, 220); 
         titleBar.setBackground(colorBarra); 
         titleBar.setPreferredSize(new Dimension(0, 40));
-
         moverVentana(titleBar);
 
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         buttonsPanel.setOpaque(false);
 
+        // Iconos originales
         JButton btnmin = CreadorBotones("−", colorBarra);
         JButton btnmax = CreadorBotones("□", colorBarra);
         JButton btncerrar = CreadorBotones("×", colorBarra);
@@ -60,16 +89,14 @@ public class leo extends JFrame {
         aplicarEfectoHover(btncerrar, new Color(232, 17, 35), Color.WHITE); 
 
         btnmin.addActionListener(e -> setState(JFrame.ICONIFIED)); 
-        
         btnmax.addActionListener(e -> {
             if (getExtendedState() == JFrame.MAXIMIZED_BOTH) {
-                setSize(820, 620);
+                setSize(1000, 700);
                 setLocationRelativeTo(null); 
             } else {
                 setExtendedState(JFrame.MAXIMIZED_BOTH);
             }
         });
-        
         btncerrar.addActionListener(e -> System.exit(0));
 
         buttonsPanel.add(btnmin);
@@ -80,10 +107,175 @@ public class leo extends JFrame {
         return titleBar;
     }
 
+    // =========================================================================
+    // LÓGICA DE PESTAÑAS Y CABECERAS
+    // =========================================================================
+    private void abrirNuevaPestana() {
+        JPanel panelContenido = crearPanelBuscador();
+        String titulo = "Buscador " + contadorPestanas++;
+        
+        int posicion = sistemaPestanas.getTabCount() - 1;
+        if(posicion < 0) posicion = 0;
+
+        sistemaPestanas.insertTab(null, null, panelContenido, null, posicion);
+        sistemaPestanas.setTabComponentAt(posicion, crearCabeceraPestana(titulo, panelContenido));
+        
+        sistemaPestanas.setSelectedIndex(posicion);
+    }
+
+    private JPanel crearCabeceraPestana(String titulo, JPanel panelContenido) {
+        JPanel cabecera = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        cabecera.setOpaque(false);
+        
+        JLabel lblTitulo = new JLabel(titulo);
+        lblTitulo.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8)); 
+        
+        JLabel btnCerrar = new JLabel(" × ");
+        btnCerrar.setFont(new Font("Arial", Font.BOLD, 16));
+        btnCerrar.setForeground(new Color(150, 150, 150));
+        btnCerrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        btnCerrar.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { btnCerrar.setForeground(Color.RED); }
+            public void mouseExited(MouseEvent e) { btnCerrar.setForeground(new Color(150, 150, 150)); }
+            public void mousePressed(MouseEvent e) {
+                int i = sistemaPestanas.indexOfComponent(panelContenido);
+                if (i != -1) {
+                    sistemaPestanas.remove(i);
+                }
+            }
+        });
+
+        cabecera.add(lblTitulo);
+        cabecera.add(btnCerrar);
+        
+        return cabecera;
+    }
+
+    // =========================================================================
+    // CREACIÓN DEL PANEL INDEPENDIENTE (El interior de cada pestaña)
+    // =========================================================================
+    private JPanel crearPanelBuscador() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(new Color(245, 245, 245)); 
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10); 
+
+        JTextField localBuscador = new JTextField(25); 
+        localBuscador.setBackground(Color.WHITE);
+        localBuscador.setForeground(new Color(60, 60, 60));
+        localBuscador.setCaretColor(new Color(100, 100, 100));
+        localBuscador.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(180, 180, 180), 1),
+            BorderFactory.createEmptyBorder(6, 10, 6, 10) 
+        ));
+        
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL; 
+        gbc.weightx = 1.0; 
+        panel.add(localBuscador, gbc);
+
+        JButton localBoton = new JButton("Ir"); 
+        localBoton.setFont(new Font("Arial", Font.BOLD, 13));
+        localBoton.setFocusPainted(false);
+        localBoton.setBorderPainted(false);
+        localBoton.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        
+        localBoton.setBackground(new Color(180, 180, 180)); 
+        localBoton.setForeground(Color.WHITE); 
+        localBoton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+
+        localBoton.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                if(!localBuscador.getText().trim().isEmpty()) {
+                    localBoton.setBackground(new Color(41, 128, 185)); 
+                }
+            }
+            public void mouseExited(MouseEvent evt) {
+                if(!localBuscador.getText().trim().isEmpty()) {
+                    localBoton.setBackground(new Color(52, 73, 94)); 
+                }
+            }
+        });
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.NONE; 
+        gbc.weightx = 0; 
+        panel.add(localBoton, gbc);
+
+        localBoton.addActionListener(e -> {
+            if(!localBuscador.getText().trim().isEmpty()){
+                procesarURLLocal(localBuscador.getText());
+            }
+        });
+        
+        localBuscador.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { actualizarBotonLocal(localBuscador, localBoton); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { actualizarBotonLocal(localBuscador, localBoton); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { actualizarBotonLocal(localBuscador, localBoton); }
+        });
+
+        return panel;
+    }
+
+    private void actualizarBotonLocal(JTextField buscador, JButton boton) {
+        boolean tieneTexto = !buscador.getText().trim().isEmpty();
+        if(!tieneTexto) {
+            boton.setBackground(new Color(180, 180, 180)); 
+            boton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
+        } else {
+            boton.setBackground(new Color(52, 73, 94)); 
+            boton.setCursor(new Cursor(Cursor.HAND_CURSOR)); 
+        }
+    }
+
+    private void procesarURLLocal(String texto) {
+        etiquetaEstado.setText("Cargando...");
+        etiquetaEstado.setForeground(new Color(41, 128, 185)); 
+
+        javax.swing.Timer timer = new javax.swing.Timer(500, e -> {
+            try {
+                URI uri = new URI(texto.trim());
+                if (!"file".equalsIgnoreCase(uri.getScheme())) {
+                    JOptionPane.showMessageDialog(this, "Debe comenzar con file:///", "Error", JOptionPane.WARNING_MESSAGE);
+                } else {
+                    File archivo = new File(uri);
+                    if (archivo.exists()) {
+                        Desktop.getDesktop().open(archivo);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "El archivo no existe", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "URL inválida", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            etiquetaEstado.setText("Listo");
+            etiquetaEstado.setForeground(new Color(100, 100, 100)); 
+        });
+        timer.setRepeats(false); 
+        timer.start();
+    }
+
+    // =========================================================================
+    // UTILIDADES UI 
+    // =========================================================================
+    private JPanel createStatusBar() {
+        JPanel statusBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 5));
+        statusBar.setBackground(new Color(220, 220, 220)); 
+        etiquetaEstado = new JLabel("Listo");
+        etiquetaEstado.setForeground(new Color(100, 100, 100)); 
+        etiquetaEstado.setFont(new Font("Arial", Font.BOLD, 12));
+        statusBar.add(etiquetaEstado);
+        return statusBar;
+    }
+
     private void aplicarEfectoHover(JButton boton, Color hoverBg, Color hoverFg) {
         Color bgColorOriginal = boton.getBackground();
         Color fgColorOriginal = boton.getForeground();
-
         boton.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 boton.setBackground(hoverBg);
@@ -107,129 +299,24 @@ public class leo extends JFrame {
         return btn;
     }
 
-    // =========================================================================
-    // BARRA DE ESTADO (NUEVO MÉTODO)
-    // =========================================================================
-    private JPanel createStatusBar() {
-        // FlowLayout.RIGHT alinea el contenido a la derecha de la pantalla
-        JPanel statusBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 5));
-        
-        // Mismo color que la barra de título para enmarcar la aplicación
-        statusBar.setBackground(new Color(220, 220, 220)); 
-        
-        etiquetaEstado = new JLabel("Listo");
-        etiquetaEstado.setForeground(new Color(100, 100, 100)); // Texto gris sutil
-        etiquetaEstado.setFont(new Font("Arial", Font.BOLD, 12));
-        
-        statusBar.add(etiquetaEstado);
-        return statusBar;
-    }
-
-    // =========================================================================
-    // PANEL PRINCIPAL
-    // =========================================================================
-    private JPanel createMainPanel() {
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        
-        mainPanel.setBackground(new Color(235, 235, 235));
-        mainPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createEmptyBorder(12, 12, 12, 12), 
-            BorderFactory.createLineBorder(new Color(190, 190, 190), 2)
-        ));
-
-        hacerRedimensionable(mainPanel);
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); 
-
-        buscador = new JTextField(25); 
-        buscador.setBackground(Color.WHITE);
-        buscador.setForeground(new Color(60, 60, 60));
-        buscador.setCaretColor(new Color(100, 100, 100));
-        buscador.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(180, 180, 180), 1),
-            BorderFactory.createEmptyBorder(6, 10, 6, 10) 
-        ));
-        
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL; 
-        gbc.weightx = 1.0; 
-        mainPanel.add(buscador, gbc);
-
-        botonBuscar = new JButton("Ir"); 
-        botonBuscar.setFont(new Font("Arial", Font.BOLD, 13));
-        botonBuscar.setFocusPainted(false);
-        botonBuscar.setBorderPainted(false);
-        botonBuscar.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-
-        botonBuscar.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent evt) {
-                if(!buscador.getText().trim().isEmpty()) {
-                    botonBuscar.setBackground(new Color(41, 128, 185)); 
-                }
-            }
-            public void mouseExited(MouseEvent evt) {
-                if(!buscador.getText().trim().isEmpty()) {
-                    botonBuscar.setBackground(new Color(52, 73, 94)); 
-                }
-            }
-        });
-
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.NONE; 
-        gbc.weightx = 0; 
-        mainPanel.add(botonBuscar, gbc);
-
-        botonBuscar.addActionListener(e -> {
-            if(!buscador.getText().trim().isEmpty()){
-                procesarURL();
-            }
-        });
-        
-        buscador.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { actualizarBoton(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { actualizarBoton(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { actualizarBoton(); }
-        });
-
-        return mainPanel;
-    }
-
-    // =========================================================================
-    // REDIMENSIONAR VENTANA
-    // =========================================================================
-    private void hacerRedimensionable(JPanel panel) {
+    private void hacerRedimensionable(JComponent panel) {
         MouseAdapter resizer = new MouseAdapter() {
             boolean resizing = false;
-
             @Override
             public void mousePressed(MouseEvent e) {
-                if (e.getX() >= panel.getWidth() - 15 && e.getY() >= panel.getHeight() - 15) {
-                    resizing = true;
-                }
+                if (e.getX() >= panel.getWidth() - 15 && e.getY() >= panel.getHeight() - 15) resizing = true;
             }
-
             @Override
-            public void mouseReleased(MouseEvent e) {
-                resizing = false;
-            }
-
+            public void mouseReleased(MouseEvent e) { resizing = false; }
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (resizing) {
-                    int newWidth = e.getXOnScreen() - getX();
-                    int newHeight = e.getYOnScreen() - getY();
-
-                    newWidth = Math.max(400, newWidth);
-                    newHeight = Math.max(300, newHeight);
-
+                    int newWidth = Math.max(400, e.getXOnScreen() - getX());
+                    int newHeight = Math.max(300, e.getYOnScreen() - getY());
                     setSize(newWidth, newHeight);
                     revalidate();
                 }
             }
-
             @Override
             public void mouseMoved(MouseEvent e) {
                 if (e.getX() >= panel.getWidth() - 15 && e.getY() >= panel.getHeight() - 15) {
@@ -239,78 +326,13 @@ public class leo extends JFrame {
                 }
             }
         };
-
         panel.addMouseListener(resizer);
         panel.addMouseMotionListener(resizer);
-    }
-
-    // ====================== LÓGICA DE LA APLICACIÓN (ACTUALIZADA) ======================
-    private void procesarURL() {
-        String texto = buscador.getText().trim();
-
-        if (texto.isEmpty()) {
-            return;
-        }
-
-        // 1. Cambiamos el texto a "Cargando..."
-        etiquetaEstado.setText("Cargando...");
-        etiquetaEstado.setForeground(new Color(41, 128, 185)); // Ponemos el texto en azul mientras carga
-
-        // 2. Usamos un Timer de medio segundo (500 ms) para que el usuario alcance a verlo
-        Timer timer = new Timer(500, e -> {
-            try {
-                URI uri = new URI(texto);
-                if (!"file".equalsIgnoreCase(uri.getScheme())) {
-                    JOptionPane.showMessageDialog(this, 
-                        "La URL debe ser un archivo local (debe comenzar con file:///)", 
-                        "URL inválida", 
-                        JOptionPane.WARNING_MESSAGE);
-                } else {
-                    File archivo = new File(uri);
-
-                    if (archivo.exists()) {
-                        Desktop.getDesktop().open(archivo);
-                    } else {
-                        JOptionPane.showMessageDialog(this, 
-                            "El archivo no existe:\n" + archivo.getAbsolutePath(), 
-                            "Archivo no encontrado", 
-                            JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, 
-                    "URL inválida o error al procesar el archivo:\n" + ex.getMessage(), 
-                    "Error", 
-                    JOptionPane.ERROR_MESSAGE);
-            }
-            
-            // 3. Volvemos al estado original al terminar
-            etiquetaEstado.setText("Listo");
-            etiquetaEstado.setForeground(new Color(100, 100, 100)); // Vuelve al gris original
-        });
-        
-        timer.setRepeats(false); // Importante: Que el temporizador solo se ejecute 1 vez
-        timer.start();
-    }
-
-    private void actualizarBoton() {
-        boolean tieneTexto = !buscador.getText().trim().isEmpty();
-        
-        if(!tieneTexto) {
-            botonBuscar.setBackground(new Color(180, 180, 180)); 
-            botonBuscar.setForeground(Color.WHITE); 
-            botonBuscar.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
-        } else {
-            botonBuscar.setBackground(new Color(52, 73, 94)); 
-            botonBuscar.setForeground(Color.WHITE); 
-            botonBuscar.setCursor(new Cursor(Cursor.HAND_CURSOR)); 
-        }
     }
 
     private void moverVentana(JPanel titleBar) {
         final int[] mouseX= new int[1];
         final int[] mouseY= new int[1];
-
         titleBar.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
                 mouseX[0]= e.getX();
@@ -319,14 +341,14 @@ public class leo extends JFrame {
         });
         titleBar.addMouseMotionListener(new MouseMotionAdapter() {
             public void mouseDragged(MouseEvent e) {
-                int newX= e.getXOnScreen()-mouseX[0];
-                int newY= e.getYOnScreen()-mouseY[0];
-                setLocation(newX, newY);
+                setLocation(e.getXOnScreen()-mouseX[0], e.getYOnScreen()-mouseY[0]);
             }
         });
     }
 
     public static void main(String[] args) {
+        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception e) {}
+        
         SwingUtilities.invokeLater(() -> {
             new leo().setVisible(true);
         });
