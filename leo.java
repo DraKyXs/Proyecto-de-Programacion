@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.text.*;
+import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -156,12 +158,12 @@ public class leo extends JFrame {
     // CREACIÓN DEL PANEL INDEPENDIENTE (El interior de cada pestaña)
     // =========================================================================
     private JPanel crearPanelBuscador() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(245, 245, 245)); 
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel panelPrincipal = new JPanel(new BorderLayout()); 
 
+        JPanel panelTop = new JPanel(new GridBagLayout());
+        panelTop.setBackground(new Color(245, 245, 245)); 
+        panelTop.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); 
 
         JTextField localBuscador = new JTextField(25); 
         localBuscador.setBackground(Color.WHITE);
@@ -176,7 +178,7 @@ public class leo extends JFrame {
         gbc.gridy = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL; 
         gbc.weightx = 1.0; 
-        panel.add(localBuscador, gbc);
+        panelTop.add(localBuscador, gbc);
 
         JButton localBoton = new JButton("Ir"); 
         localBoton.setFont(new Font("Arial", Font.BOLD, 13));
@@ -205,21 +207,41 @@ public class leo extends JFrame {
         gbc.gridy = 0;
         gbc.fill = GridBagConstraints.NONE; 
         gbc.weightx = 0; 
-        panel.add(localBoton, gbc);
+        
+        panelTop.add(localBoton, gbc);
+        panelPrincipal.add(panelTop, BorderLayout.NORTH); 
 
-        localBoton.addActionListener(e -> {
+        // Creamos la instancia del renderizador
+        Renderizador renderizador = new Renderizador();
+        
+        renderizador.setNavegacionListener(nuevaRuta -> {
+            localBuscador.setText(nuevaRuta); 
+            procesarURLLocal(nuevaRuta, renderizador); 
+        });
+        
+        // se pone en el centro 
+        panelPrincipal.add(renderizador, BorderLayout.CENTER);
+
+       localBoton.addActionListener(e -> {
             if(!localBuscador.getText().trim().isEmpty()){
-                procesarURLLocal(localBuscador.getText());
+                procesarURLLocal(localBuscador.getText(), renderizador);
             }
         });
         
+        // Aqui esta la implementación del ENTER 
+        localBuscador.addActionListener(e -> {
+            if(!localBuscador.getText().trim().isEmpty()){
+                procesarURLLocal(localBuscador.getText(), renderizador);
+            }
+        });
+
         localBuscador.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { actualizarBotonLocal(localBuscador, localBoton); }
             public void removeUpdate(javax.swing.event.DocumentEvent e) { actualizarBotonLocal(localBuscador, localBoton); }
             public void changedUpdate(javax.swing.event.DocumentEvent e) { actualizarBotonLocal(localBuscador, localBoton); }
         });
 
-        return panel;
+        return panelPrincipal;
     }
 
     private void actualizarBotonLocal(JTextField buscador, JButton boton) {
@@ -233,25 +255,23 @@ public class leo extends JFrame {
         }
     }
 
-    private void procesarURLLocal(String texto) {
+private void procesarURLLocal(String texto, Renderizador renderizador) {
         etiquetaEstado.setText("Cargando...");
         etiquetaEstado.setForeground(new Color(41, 128, 185)); 
 
         javax.swing.Timer timer = new javax.swing.Timer(500, e -> {
             try {
-                URI uri = new URI(texto.trim());
-                if (!"file".equalsIgnoreCase(uri.getScheme())) {
-                    JOptionPane.showMessageDialog(this, "Debe comenzar con file:///", "Error", JOptionPane.WARNING_MESSAGE);
+                String rutaLimpia = texto.trim().replace("file:///", "").replace("file://", "");
+                File archivo = new File(rutaLimpia);
+                
+                if (archivo.exists() && archivo.isFile()) {
+                    renderizador.cargarArchivo(archivo); 
                 } else {
-                    File archivo = new File(uri);
-                    if (archivo.exists()) {
-                        Desktop.getDesktop().open(archivo);
-                    } else {
-                        JOptionPane.showMessageDialog(this, "El archivo no existe", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
+                    JOptionPane.showMessageDialog(this, "El archivo local no existe:\n" + archivo.getAbsolutePath(), "Error 404", JOptionPane.ERROR_MESSAGE);
                 }
+
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "URL inválida", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Ruta inválida", "Error", JOptionPane.ERROR_MESSAGE);
             }
             etiquetaEstado.setText("Listo");
             etiquetaEstado.setForeground(new Color(100, 100, 100)); 
@@ -363,8 +383,8 @@ class Renderizador extends JPanel {
         void navegar(String urlDestino);
     }
 
-    public Renderizador(NavegacionListener listener) {
-        this.listener = listener;
+    // Constructor sin parámetros (Esto soluciona el error de inicializacion)
+    public Renderizador() {
         setLayout(new BorderLayout());
 
         areaContenido = new JTextPane();
@@ -379,6 +399,11 @@ class Renderizador extends JPanel {
         JScrollPane scroll = new JScrollPane(areaContenido);
         scroll.setBorder(null);
         add(scroll, BorderLayout.CENTER);
+    }
+
+    // metodo para asignar la acción de los enlaces despues de crearlo
+    public void setNavegacionListener(NavegacionListener listener) {
+        this.listener = listener;
     }
 
     public void cargarArchivo(File archivo) {
