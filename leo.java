@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.text.*;
+import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -67,7 +69,7 @@ public class leo extends JFrame {
     }
 
     // =========================================================================
-    // BARRA DE TÍTULO (CON LOS ICONOS ANTIGUOS RESTAURADOS)
+    // BARRA DE TÍTULO
     // =========================================================================
     private JPanel createTitleBar() {
         JPanel titleBar = new JPanel(new BorderLayout());
@@ -156,12 +158,12 @@ public class leo extends JFrame {
     // CREACIÓN DEL PANEL INDEPENDIENTE (El interior de cada pestaña)
     // =========================================================================
     private JPanel crearPanelBuscador() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(245, 245, 245)); 
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        JPanel panelPrincipal = new JPanel(new BorderLayout()); 
 
+        JPanel panelTop = new JPanel(new GridBagLayout());
+        panelTop.setBackground(new Color(245, 245, 245)); 
+        panelTop.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); 
 
         JTextField localBuscador = new JTextField(25); 
         localBuscador.setBackground(Color.WHITE);
@@ -176,7 +178,7 @@ public class leo extends JFrame {
         gbc.gridy = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL; 
         gbc.weightx = 1.0; 
-        panel.add(localBuscador, gbc);
+        panelTop.add(localBuscador, gbc);
 
         JButton localBoton = new JButton("Ir"); 
         localBoton.setFont(new Font("Arial", Font.BOLD, 13));
@@ -205,21 +207,41 @@ public class leo extends JFrame {
         gbc.gridy = 0;
         gbc.fill = GridBagConstraints.NONE; 
         gbc.weightx = 0; 
-        panel.add(localBoton, gbc);
+        
+        panelTop.add(localBoton, gbc);
+        panelPrincipal.add(panelTop, BorderLayout.NORTH); 
 
-        localBoton.addActionListener(e -> {
+        // Creamos la instancia del renderizador
+        Renderizador renderizador = new Renderizador();
+        
+        renderizador.setNavegacionListener(nuevaRuta -> {
+            localBuscador.setText(nuevaRuta); 
+            procesarURLLocal(nuevaRuta, renderizador); 
+        });
+        
+        // se pone en el centro 
+        panelPrincipal.add(renderizador, BorderLayout.CENTER);
+
+       localBoton.addActionListener(e -> {
             if(!localBuscador.getText().trim().isEmpty()){
-                procesarURLLocal(localBuscador.getText());
+                procesarURLLocal(localBuscador.getText(), renderizador);
             }
         });
         
+        // Aqui esta la implementación del ENTER 
+        localBuscador.addActionListener(e -> {
+            if(!localBuscador.getText().trim().isEmpty()){
+                procesarURLLocal(localBuscador.getText(), renderizador);
+            }
+        });
+
         localBuscador.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             public void insertUpdate(javax.swing.event.DocumentEvent e) { actualizarBotonLocal(localBuscador, localBoton); }
             public void removeUpdate(javax.swing.event.DocumentEvent e) { actualizarBotonLocal(localBuscador, localBoton); }
             public void changedUpdate(javax.swing.event.DocumentEvent e) { actualizarBotonLocal(localBuscador, localBoton); }
         });
 
-        return panel;
+        return panelPrincipal;
     }
 
     private void actualizarBotonLocal(JTextField buscador, JButton boton) {
@@ -233,25 +255,23 @@ public class leo extends JFrame {
         }
     }
 
-    private void procesarURLLocal(String texto) {
+private void procesarURLLocal(String texto, Renderizador renderizador) {
         etiquetaEstado.setText("Cargando...");
         etiquetaEstado.setForeground(new Color(41, 128, 185)); 
 
         javax.swing.Timer timer = new javax.swing.Timer(500, e -> {
             try {
-                URI uri = new URI(texto.trim());
-                if (!"file".equalsIgnoreCase(uri.getScheme())) {
-                    JOptionPane.showMessageDialog(this, "Debe comenzar con file:///", "Error", JOptionPane.WARNING_MESSAGE);
+                String rutaLimpia = texto.trim().replace("file:///", "").replace("file://", "");
+                File archivo = new File(rutaLimpia);
+                
+                if (archivo.exists() && archivo.isFile()) {
+                    renderizador.cargarArchivo(archivo); 
                 } else {
-                    File archivo = new File(uri);
-                    if (archivo.exists()) {
-                        Desktop.getDesktop().open(archivo);
-                    } else {
-                        JOptionPane.showMessageDialog(this, "El archivo no existe", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
+                    JOptionPane.showMessageDialog(this, "El archivo local no existe:\n" + archivo.getAbsolutePath(), "Error 404", JOptionPane.ERROR_MESSAGE);
                 }
+
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "URL inválida", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Ruta inválida", "Error", JOptionPane.ERROR_MESSAGE);
             }
             etiquetaEstado.setText("Listo");
             etiquetaEstado.setForeground(new Color(100, 100, 100)); 
@@ -261,7 +281,7 @@ public class leo extends JFrame {
     }
 
     // =========================================================================
-    // UTILIDADES UI 
+    // UTILIDADES BOTONES Y PANELES
     // =========================================================================
     private JPanel createStatusBar() {
         JPanel statusBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 5));
@@ -352,5 +372,95 @@ public class leo extends JFrame {
         SwingUtilities.invokeLater(() -> {
             new leo().setVisible(true);
         });
+    }
+}
+
+class Renderizador extends JPanel {
+    private JTextPane areaContenido;
+    private NavegacionListener listener;
+
+    public interface NavegacionListener {
+        void navegar(String urlDestino);
+    }
+
+
+    public Renderizador() {
+        setLayout(new BorderLayout());
+
+        areaContenido = new JTextPane();
+        areaContenido.setEditable(false); 
+        areaContenido.setContentType("text/html");
+        
+        areaContenido.setBackground(Color.WHITE);
+        areaContenido.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        areaContenido.addHyperlinkListener(e -> manejarEventosEnlace(e));
+
+        JScrollPane scroll = new JScrollPane(areaContenido);
+        scroll.setBorder(null);
+        add(scroll, BorderLayout.CENTER);
+    }
+
+    // metodo para asignar la acción de los enlaces despues de crearlo
+    public void setNavegacionListener(NavegacionListener listener) {
+        this.listener = listener;
+    }
+
+    public void cargarArchivo(File archivo) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
+                String linea;
+                while ((linea = br.readLine()) != null) {
+                    sb.append(linea).append("\n");
+                }
+            }
+            
+            String contenidoHtml = sb.toString();
+
+            String htmlMinusculas = contenidoHtml.toLowerCase();
+            if (!htmlMinusculas.contains("<html>") || !htmlMinusculas.contains("<body>")) {
+                areaContenido.setContentType("text/plain");
+                areaContenido.setText("ERROR: El archivo no es un documento HTML válido.\nDebe contener las etiquetas <html> y <body>.");
+                areaContenido.setForeground(Color.RED);
+                return;
+            }
+
+            contenidoHtml = contenidoHtml.replace("\n", "<br>");
+
+            areaContenido.setContentType("text/html");
+            areaContenido.setText(contenidoHtml);
+            areaContenido.setForeground(Color.BLACK); 
+
+        } catch (Exception ex) {
+            areaContenido.setContentType("text/plain");
+            areaContenido.setText("Error crítico al leer el archivo: " + ex.getMessage());
+        }
+    }
+
+    private void manejarEventosEnlace(HyperlinkEvent e) {
+        if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+            if (listener != null) {
+                listener.navegar(e.getDescription());
+            }
+        } else if (e.getEventType() == HyperlinkEvent.EventType.ENTERED) {
+            areaContenido.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            cambiarColorEnlace(e.getSourceElement(), new Color(46, 204, 113)); 
+        } else if (e.getEventType() == HyperlinkEvent.EventType.EXITED) {
+            areaContenido.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            cambiarColorEnlace(e.getSourceElement(), Color.BLUE); 
+        }
+    }
+
+    private void cambiarColorEnlace(Element elementoHtml, Color color) {
+        if (elementoHtml != null && areaContenido.getDocument() instanceof StyledDocument) {
+            StyledDocument doc = (StyledDocument) areaContenido.getDocument();
+            SimpleAttributeSet atributos = new SimpleAttributeSet();
+            StyleConstants.setForeground(atributos, color);
+            
+            int inicio = elementoHtml.getStartOffset();
+            int longitud = elementoHtml.getEndOffset() - inicio;
+            doc.setCharacterAttributes(inicio, longitud, atributos, false);
+        }
     }
 }

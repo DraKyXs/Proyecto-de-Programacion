@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "leo",
+            "request": "launch",
+            "mainClass": "leo",
+            "projectName": "Proyecto-de-Programacion_d3603b09"
+        },
+        {
             "type": "jdk",
             "request": "launch",
             "name": "Launch Java App"
