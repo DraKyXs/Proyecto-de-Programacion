@@ -102,7 +102,7 @@ public class leo extends JFrame {
         // Lógica de colores (Fondo, Texto)
         temaClaro.addActionListener(e -> cambiarTemaVisual(Color.WHITE, Color.BLACK));
         temaOscuro.addActionListener(e -> cambiarTemaVisual(new Color(40, 40, 40), new Color(220, 220, 220)));
-        temaHacker.addActionListener(e -> cambiarTemaVisual(Color.BLACK, new Color(0, 25, 0)));
+        temaHacker.addActionListener(e -> cambiarTemaVisual(Color.BLACK, new Color(0, 255, 0)));
 
         menuTemas.add(temaClaro);
         menuTemas.add(temaOscuro);
