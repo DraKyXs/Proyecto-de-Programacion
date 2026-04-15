@@ -1,16 +1,19 @@
-import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.net.*;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.text.*;
 
 public class leo extends JFrame {
     
     private JTabbedPane sistemaPestanas;
     private JLabel etiquetaEstado;
     private int contadorPestanas = 1;
+    
+    // Variables globales para guardar el tema elegido
+    private Color fondoActual = Color.WHITE;
+    private Color textoActual = Color.BLACK;
 
     public leo() {
         initializeFrame();
@@ -37,16 +40,14 @@ public class leo extends JFrame {
         btnSumar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSumar.setPreferredSize(new Dimension(35, 20));
 
-        // LA SOLUCIÓN: Agregamos "mousePressed" directamente al "+" para que detecte el clic
         btnSumar.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) { btnSumar.setForeground(new Color(46, 204, 113)); }
             public void mouseExited(MouseEvent e) { btnSumar.setForeground(new Color(100, 100, 100)); }
-            public void mousePressed(MouseEvent e) { abrirNuevaPestana(); } // <--- ¡AQUÍ ESTÁ LA MAGIA!
+            public void mousePressed(MouseEvent e) { abrirNuevaPestana(); } 
         });
 
         sistemaPestanas.setTabComponentAt(0, btnSumar); 
-
-        // Por si hacen clic en el borde de la pestaña y no exactamente en el símbolo "+"
+        
         sistemaPestanas.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -69,7 +70,7 @@ public class leo extends JFrame {
     }
 
     // =========================================================================
-    // BARRA DE TÍTULO
+    // BARRA DE TÍTULO CON MENÚ DE TEMAS (⚙)
     // =========================================================================
     private JPanel createTitleBar() {
         JPanel titleBar = new JPanel(new BorderLayout());
@@ -81,14 +82,34 @@ public class leo extends JFrame {
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         buttonsPanel.setOpaque(false);
 
-        // Iconos originales
+        // NUEVO: Botón de Menú de Temas
+        JButton btnTema = CreadorBotones("⚙", colorBarra);
         JButton btnmin = CreadorBotones("−", colorBarra);
         JButton btnmax = CreadorBotones("□", colorBarra);
         JButton btncerrar = CreadorBotones("×", colorBarra);
 
+        aplicarEfectoHover(btnTema, new Color(200, 200, 200), new Color(80, 80, 80)); 
         aplicarEfectoHover(btnmin, new Color(200, 200, 200), new Color(80, 80, 80)); 
         aplicarEfectoHover(btnmax, new Color(200, 200, 200), new Color(80, 80, 80));
         aplicarEfectoHover(btncerrar, new Color(232, 17, 35), Color.WHITE); 
+
+        // Creación del Menú Desplegable Simple para los colores
+        JPopupMenu menuTemas = new JPopupMenu();
+        JMenuItem temaClaro = new JMenuItem("Tema Claro (Defecto)");
+        JMenuItem temaOscuro = new JMenuItem("Tema Oscuro");
+        JMenuItem temaHacker = new JMenuItem("Tema Hacker");
+
+        // Lógica de colores (Fondo, Texto)
+        temaClaro.addActionListener(e -> cambiarTemaVisual(Color.WHITE, Color.BLACK));
+        temaOscuro.addActionListener(e -> cambiarTemaVisual(new Color(40, 40, 40), new Color(220, 220, 220)));
+        temaHacker.addActionListener(e -> cambiarTemaVisual(Color.BLACK, new Color(0, 25, 0)));
+
+        menuTemas.add(temaClaro);
+        menuTemas.add(temaOscuro);
+        menuTemas.add(temaHacker);
+
+        // Al hacer clic en el botón del engranaje, mostramos el menú debajo
+        btnTema.addActionListener(e -> menuTemas.show(btnTema, 0, btnTema.getHeight()));
 
         btnmin.addActionListener(e -> setState(JFrame.ICONIFIED)); 
         btnmax.addActionListener(e -> {
@@ -101,12 +122,36 @@ public class leo extends JFrame {
         });
         btncerrar.addActionListener(e -> System.exit(0));
 
+        buttonsPanel.add(btnTema); // Añadimos el botón del tema
         buttonsPanel.add(btnmin);
         buttonsPanel.add(btnmax);
         buttonsPanel.add(btncerrar);
 
         titleBar.add(buttonsPanel, BorderLayout.EAST);
         return titleBar;
+    }
+
+    // =========================================================================
+    // LÓGICA DE APLICACIÓN DE TEMA VISUAL A TODAS LAS PESTAÑAS
+    // =========================================================================
+    private void cambiarTemaVisual(Color fondo, Color texto) {
+        this.fondoActual = fondo;
+        this.textoActual = texto;
+        
+        // Recorremos todas las pestañas para aplicar el color al Renderizador
+        for (int i = 0; i < sistemaPestanas.getTabCount() - 1; i++) {
+            Component c = sistemaPestanas.getComponentAt(i);
+            if (c instanceof JPanel) {
+                JPanel panelPrincipal = (JPanel) c;
+                BorderLayout layout = (BorderLayout) panelPrincipal.getLayout();
+                Component center = layout.getLayoutComponent(BorderLayout.CENTER);
+                
+                // Si el centro es nuestro Renderizador, le aplicamos el tema
+                if (center instanceof Renderizador) {
+                    ((Renderizador) center).aplicarTemaVisual(fondo, texto);
+                }
+            }
+        }
     }
 
     // =========================================================================
@@ -155,7 +200,7 @@ public class leo extends JFrame {
     }
 
     // =========================================================================
-    // CREACIÓN DEL PANEL INDEPENDIENTE (El interior de cada pestaña)
+    // CREACIÓN DEL PANEL INDEPENDIENTE 
     // =========================================================================
     private JPanel crearPanelBuscador() {
         JPanel panelPrincipal = new JPanel(new BorderLayout()); 
@@ -211,15 +256,15 @@ public class leo extends JFrame {
         panelTop.add(localBoton, gbc);
         panelPrincipal.add(panelTop, BorderLayout.NORTH); 
 
-        // Creamos la instancia del renderizador
+        // Creamos la instancia del renderizador y aplicamos el tema de inmediato
         Renderizador renderizador = new Renderizador();
+        renderizador.aplicarTemaVisual(fondoActual, textoActual);
         
         renderizador.setNavegacionListener(nuevaRuta -> {
             localBuscador.setText(nuevaRuta); 
             procesarURLLocal(nuevaRuta, renderizador); 
         });
         
-        // se pone en el centro 
         panelPrincipal.add(renderizador, BorderLayout.CENTER);
 
        localBoton.addActionListener(e -> {
@@ -228,7 +273,6 @@ public class leo extends JFrame {
             }
         });
         
-        // Aqui esta la implementación del ENTER 
         localBuscador.addActionListener(e -> {
             if(!localBuscador.getText().trim().isEmpty()){
                 procesarURLLocal(localBuscador.getText(), renderizador);
@@ -255,7 +299,7 @@ public class leo extends JFrame {
         }
     }
 
-private void procesarURLLocal(String texto, Renderizador renderizador) {
+    private void procesarURLLocal(String texto, Renderizador renderizador) {
         etiquetaEstado.setText("Cargando...");
         etiquetaEstado.setForeground(new Color(41, 128, 185)); 
 
@@ -375,6 +419,9 @@ private void procesarURLLocal(String texto, Renderizador renderizador) {
     }
 }
 
+// =============================================================================
+// CLASE RENDERIZADOR (ACTUALIZADA PARA SOPORTAR TEMAS VISUALES)
+// =============================================================================
 class Renderizador extends JPanel {
     private JTextPane areaContenido;
     private NavegacionListener listener;
@@ -383,13 +430,16 @@ class Renderizador extends JPanel {
         void navegar(String urlDestino);
     }
 
-
     public Renderizador() {
         setLayout(new BorderLayout());
 
         areaContenido = new JTextPane();
         areaContenido.setEditable(false); 
         areaContenido.setContentType("text/html");
+        
+        // TRUCO: Esto obliga al JTextPane HTML a obedecer nuestros colores de Java
+        areaContenido.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
+        areaContenido.setFont(new Font("Arial", Font.PLAIN, 14));
         
         areaContenido.setBackground(Color.WHITE);
         areaContenido.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
@@ -401,7 +451,12 @@ class Renderizador extends JPanel {
         add(scroll, BorderLayout.CENTER);
     }
 
-    // metodo para asignar la acción de los enlaces despues de crearlo
+    // MÉTODO NUEVO PARA APLICAR EL COLOR
+    public void aplicarTemaVisual(Color fondo, Color texto) {
+        areaContenido.setBackground(fondo);
+        areaContenido.setForeground(texto);
+    }
+
     public void setNavegacionListener(NavegacionListener listener) {
         this.listener = listener;
     }
@@ -430,7 +485,9 @@ class Renderizador extends JPanel {
 
             areaContenido.setContentType("text/html");
             areaContenido.setText(contenidoHtml);
-            areaContenido.setForeground(Color.BLACK); 
+            
+            // Ya NO forzamos el color a negro aquí, respetamos el tema que esté activo
+            // areaContenido.setForeground(Color.BLACK); <-- Eliminado
 
         } catch (Exception ex) {
             areaContenido.setContentType("text/plain");
