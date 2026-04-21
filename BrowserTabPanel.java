@@ -29,7 +29,6 @@ public class BrowserTabPanel extends JPanel {
 
         setupListeners();
     }
-
     private JPanel createSearchPanel() {
         JPanel panelTop = new JPanel(new GridBagLayout());
         panelTop.setBackground(new Color(245, 245, 245)); 
@@ -124,7 +123,6 @@ public class BrowserTabPanel extends JPanel {
         timer.start();
     }
 
-    // Método llamado desde TitleBar para cambiar tema
     public void aplicarTemaVisual(Color fondo, Color texto) {
         if (renderizador != null) {
             renderizador.aplicarTemaVisual(fondo, texto);

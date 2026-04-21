@@ -24,7 +24,7 @@ public class TitleBar extends JPanel {
         aplicarEfectoHover(btnmax, new Color(200, 200, 200), new Color(80, 80, 80));
         aplicarEfectoHover(btncerrar, new Color(232, 17, 35), Color.WHITE); 
 
-        // Creación del Menú Desplegable
+        
         JPopupMenu menuTemas = new JPopupMenu();
         JMenuItem temaClaro = new JMenuItem("Tema Claro (Defecto)");
         JMenuItem temaOscuro = new JMenuItem("Tema Oscuro");
@@ -74,7 +74,7 @@ public class TitleBar extends JPanel {
         }
     }
 
-    // === MÉTODOS ORIGINALES COPIADOS ===
+    
     private JButton CreadorBotones(String text, Color bgColor) {
         JButton btn = new JButton(text);
         btn.setBackground(bgColor);

@@ -6,6 +6,7 @@ public class leo extends JFrame {
     
     private JTabbedPane sistemaPestanas;
     public JLabel etiquetaEstado;
+    
     private int contadorPestanas = 1;
     
     // Variables globales para guardar el tema elegido
@@ -15,19 +16,17 @@ public class leo extends JFrame {
     public leo() {
         initializeFrame();
         
-        // --- BARRA DE TÍTULO PRINCIPAL ---
         add(new TitleBar(this), BorderLayout.NORTH);
         
-        // --- SISTEMA DE PESTAÑAS ---
         sistemaPestanas = new JTabbedPane();
         sistemaPestanas.setBackground(new Color(235, 235, 235));
         hacerRedimensionable(sistemaPestanas); 
         add(sistemaPestanas, BorderLayout.CENTER);
         
-        // --- BARRA DE ESTADO GLOBAL ---
+        // ---------------- BARRA DE ESTADO GLOBAL --------------------
         add(new StatusBar(this), BorderLayout.SOUTH);
         
-        // 1. CREAMOS LA "PESTAÑA FALSA" (CON EL "+" GRANDE Y ELEGANTE)
+        
         sistemaPestanas.addTab("", new JPanel()); 
         
         JLabel btnSumar = new JLabel("+"); 
@@ -38,9 +37,15 @@ public class leo extends JFrame {
         btnSumar.setPreferredSize(new Dimension(35, 20));
 
         btnSumar.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent e) { btnSumar.setForeground(new Color(46, 204, 113)); }
-            public void mouseExited(java.awt.event.MouseEvent e) { btnSumar.setForeground(new Color(100, 100, 100)); }
-            public void mousePressed(java.awt.event.MouseEvent e) { abrirNuevaPestana(); } 
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                btnSumar.setForeground(new Color(46, 204, 113));
+            }
+            public void mouseExited(java.awt.event.MouseEvent e) { 
+                btnSumar.setForeground(new Color(100, 100, 100)); 
+            }
+            public void mousePressed(java.awt.event.MouseEvent e) { 
+                abrirNuevaPestana(); 
+            } 
         });
 
         sistemaPestanas.setTabComponentAt(0, btnSumar); 
@@ -66,14 +71,14 @@ public class leo extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    // =========================================================================
-    // LÓGICA DE PESTAÑAS Y CABECERAS
-    // =========================================================================
+    // ==================================================================================================================================================
+    // LÓGICA DE PESTAÑAS Y HEADER
+    // ==================================================================================================================================================
     public void abrirNuevaPestana() {
         JPanel panelContenido = new BrowserTabPanel(this);
-        String titulo = "Buscador " + contadorPestanas++;
+        String titulo = "Buscador "+contadorPestanas++;
         
-        int posicion = sistemaPestanas.getTabCount() - 1;
+        int posicion = sistemaPestanas.getTabCount()-1;
         if(posicion < 0) posicion = 0;
 
         sistemaPestanas.insertTab(null, null, panelContenido, null, posicion);
@@ -82,16 +87,24 @@ public class leo extends JFrame {
         sistemaPestanas.setSelectedIndex(posicion);
     }
 
-    // Getters necesarios para que las otras clases accedan a los datos
-    public JTabbedPane getSistemaPestanas() { return sistemaPestanas; }
-    public Color getFondoActual() { return fondoActual; }
-    public Color getTextoActual() { return textoActual; }
-    public void setFondoActual(Color c) { this.fondoActual = c; }
-    public void setTextoActual(Color c) { this.textoActual = c; }
 
-    // =========================================================================
-    // UTILIDADES QUE SE USAN DESDE OTRAS CLASES
-    // =========================================================================
+    public JTabbedPane getSistemaPestanas() { 
+        return sistemaPestanas; 
+    }
+    public Color getFondoActual() { 
+        return fondoActual; 
+    }
+    public Color getTextoActual() { 
+        return textoActual; 
+    }
+    public void setFondoActual(Color c) { 
+        this.fondoActual = c; 
+    }
+    public void setTextoActual(Color c) { 
+        this.textoActual = c; 
+    }
+
+    
     public void hacerRedimensionable(JComponent panel) {
         MouseAdapter resizer = new MouseAdapter() {
             boolean resizing = false;

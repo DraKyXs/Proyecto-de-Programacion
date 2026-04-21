@@ -12,6 +12,6 @@ public class StatusBar extends JPanel {
         etiquetaEstado.setFont(new Font("Arial", Font.BOLD, 12));
         add(etiquetaEstado);
         
-        mainFrame.etiquetaEstado = etiquetaEstado; // Conexión con la variable de leo
+        mainFrame.etiquetaEstado = etiquetaEstado; 
     }
 }

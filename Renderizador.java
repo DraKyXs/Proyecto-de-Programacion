@@ -4,10 +4,9 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
 
-public class Renderizador extends JPanel {   // ← Cambiado a public
+public class Renderizador extends JPanel {  
     private JTextPane areaContenido;
     private NavegacionListener listener;
-
     public interface NavegacionListener {
         void navegar(String urlDestino);
     }
