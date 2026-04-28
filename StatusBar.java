@@ -3,7 +3,7 @@ import javax.swing.*;
 
 public class StatusBar extends JPanel {
     
-    public StatusBar(leo mainFrame) {
+    public StatusBar(main mainFrame) {
         setLayout(new FlowLayout(FlowLayout.RIGHT, 15, 5));
         setBackground(new Color(220, 220, 220)); 
         

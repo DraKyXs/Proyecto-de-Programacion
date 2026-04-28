@@ -4,7 +4,7 @@ import javax.swing.*;
 
 public class TitleBar extends JPanel {
 
-    public TitleBar(leo mainFrame) {
+    public TitleBar(main mainFrame) {
         setLayout(new BorderLayout());
         Color colorBarra = new Color(220, 220, 220); 
         setBackground(colorBarra); 
@@ -52,7 +52,7 @@ public class TitleBar extends JPanel {
         add(buttonsPanel, BorderLayout.EAST);
     }
 
-    private void cambiarTemaVisual(leo frame, Color fondo, Color texto) {
+    private void cambiarTemaVisual(main frame, Color fondo, Color texto) {
         frame.setFondoActual(fondo);
         frame.setTextoActual(texto);
         
@@ -65,7 +65,7 @@ public class TitleBar extends JPanel {
         }
     }
 
-    private void toggleMaximize(leo frame) {
+    private void toggleMaximize(main frame) {
         if (frame.getExtendedState() == JFrame.MAXIMIZED_BOTH) {
             frame.setSize(1000, 700);
             frame.setLocationRelativeTo(null); 
@@ -101,7 +101,7 @@ public class TitleBar extends JPanel {
         });
     }
 
-    private void moverVentana(JPanel titleBar, leo frame) {
+    private void moverVentana(JPanel titleBar, main frame) {
         final int[] mouseX = new int[1];
         final int[] mouseY = new int[1];
         titleBar.addMouseListener(new MouseAdapter() {

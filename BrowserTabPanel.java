@@ -5,12 +5,12 @@ import javax.swing.event.*;
 
 public class BrowserTabPanel extends JPanel {
 
-    private final leo mainFrame;
+    private final main mainFrame;
     private JTextField localBuscador;
     private JButton localBoton;
     public Renderizador renderizador;
 
-    public BrowserTabPanel(leo mainFrame) {
+    public BrowserTabPanel(main mainFrame) {
         this.mainFrame = mainFrame;
         setLayout(new BorderLayout()); 
 
