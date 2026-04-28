@@ -2,7 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-public class leo extends JFrame {
+public class main extends JFrame {
     
     private JTabbedPane sistemaPestanas;
     public JLabel etiquetaEstado;
@@ -13,7 +13,7 @@ public class leo extends JFrame {
     private Color fondoActual = Color.WHITE;
     private Color textoActual = Color.BLACK;
 
-    public leo() {
+    public main() {
         initializeFrame();
         
         add(new TitleBar(this), BorderLayout.NORTH);
@@ -140,7 +140,7 @@ public class leo extends JFrame {
         try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception e) {}
         
         SwingUtilities.invokeLater(() -> {
-            new leo().setVisible(true);
+            new main().setVisible(true);
         });
     }
 }
