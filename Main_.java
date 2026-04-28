@@ -116,6 +116,32 @@ class Main {
 }
 
 */ 
+/* codigo de time outs de stack overflow
+public @ResponseBody ResponseEntity<TransaccionDTO> iniciarTransaccion() throws Exception {
+   ResponseEntity<TransaccionDTO> response = null;
+    try {
+
+        String s = (String) CompletableFuture.supplyAsync(() -> {
+
+            System.out.println("test");
+            System.out.println("test");
+            System.out.println("test");
+            System.out.println("test");
+            System.out.println("test");
+
+            return null;
+        }).get(10, TimeUnit.SECONDS);
+    } catch (TimeoutException | ExecutionException e) {
+        System.out.println("Time out has occurred");
+    } catch (InterruptedException | CommandLine.ExecutionException e) {
+    }catch (Exception e) {
+            e.printStackTrace();
+        }
+     response = transaccionService.iniciarTransaccion();
+    TransaccionDTO transaccion = new TransaccionDTO();
+    return new ResponseEntity<TransaccionDTO>(transaccion, HttpStatus.valueOf(200));
+}
+ */
 
     }
 }
