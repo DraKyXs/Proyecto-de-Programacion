@@ -1,5 +1,4 @@
 import java.awt.*;
-import java.io.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;
@@ -40,35 +39,18 @@ public class Renderizador extends JPanel {
         this.listener = listener;
     }
 
-    public void cargarArchivo(File archivo) {
-        try {
-            StringBuilder sb = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
-                String linea;
-                while ((linea = br.readLine()) != null) {
-                    sb.append(linea).append("\n");
-                }
-            }
-            
-            String contenidoHtml = sb.toString();
-
-            String htmlMinusculas = contenidoHtml.toLowerCase();
-            if (!htmlMinusculas.contains("<html>") || !htmlMinusculas.contains("<body>")) {
-                areaContenido.setContentType("text/plain");
-                areaContenido.setText("ERROR: El archivo no es un documento HTML válido.\nDebe contener las etiquetas <html> y <body>.");
-                areaContenido.setForeground(Color.RED);
-                return;
-            }
-
-            contenidoHtml = contenidoHtml.replace("\n", "<br>");
-
-            areaContenido.setContentType("text/html");
-            areaContenido.setText(contenidoHtml);
-
-        } catch (Exception ex) {
-            areaContenido.setContentType("text/plain");
-            areaContenido.setText("Error crítico al leer el archivo: " + ex.getMessage());
+    public void cargarURL(String contenidoURL) {
+        //cambié el metodo por este para que sea especifico de URL y no de local, a demas puse prints porque me estaba dando errores que no se mostraban en el render y los tiré a la consola
+        if(contenidoURL != null ){
+            areaContenido.setText(contenidoURL);
+            System.out.println(contenidoURL);
+        } else {
+            areaContenido.setText("<html><body><h1>Error al cargar la página</h1></body></html>");
+            //en el setText puse las etiquetas html para que se muestre el error en el render
+            System.out.println("no hay contenido");
         }
+        areaContenido.setCaretPosition(0);
+        //barra de scroll que se resetea cada vez que carga un URL nuevo
     }
 
     private void manejarEventosEnlace(HyperlinkEvent e) {
