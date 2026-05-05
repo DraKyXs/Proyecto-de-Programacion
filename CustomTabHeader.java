@@ -17,7 +17,9 @@ public class CustomTabHeader extends JPanel {
         btnCerrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         btnCerrar.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { btnCerrar.setForeground(Color.RED); }
+            public void mouseEntered(MouseEvent e) { 
+                btnCerrar.setForeground(Color.RED);
+                System.out.println(sistemaPestanas.getSize()); }
             public void mouseExited(MouseEvent e) { btnCerrar.setForeground(new Color(150, 150, 150)); }
             public void mousePressed(MouseEvent e) {
                 int i = sistemaPestanas.indexOfComponent(panelContenido);

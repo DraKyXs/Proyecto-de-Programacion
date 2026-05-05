@@ -155,15 +155,19 @@ public class BrowserTabPanel extends JPanel {
         mainFrame.etiquetaEstado.setForeground(new Color(100,100,100));
 
     }
+
+
+			
+/* codigo de timer modificado para encajar en el codigo
+
+        String s = (String) CompletableFuture.supplyAsync(() -> {
+            return null;
+        }).get(10, TimeUnit.SECONDS);
+    } catch (TimeoutException | ExecutionException e) {
+        System.out.println("Limite de tiempo excedido");
+    } catch (InterruptedException | CommandLine.ExecutionException e) 
     
-    
-    
-
-
-
-
-
-
+ */
 
 
     public void aplicarTemaVisual(Color fondo, Color texto) {
@@ -171,12 +175,6 @@ public class BrowserTabPanel extends JPanel {
             renderizador.aplicarTemaVisual(fondo, texto);
         }
     }
-
-
-
-
-
-
 
 
     //metodo que realiza la conexión TCP y la conexion GET
