@@ -17,7 +17,6 @@ public class main extends JFrame {
         initializeFrame();
         
         add(new TitleBar(this), BorderLayout.NORTH);
-        
         sistemaPestanas = new JTabbedPane();
         sistemaPestanas.setBackground(new Color(235, 235, 235));
         hacerRedimensionable(sistemaPestanas); 
@@ -35,7 +34,6 @@ public class main extends JFrame {
         btnSumar.setHorizontalAlignment(SwingConstants.CENTER);
         btnSumar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSumar.setPreferredSize(new Dimension(35, 20));
-
         btnSumar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 btnSumar.setForeground(new Color(46, 204, 113));
@@ -143,7 +141,4 @@ public class main extends JFrame {
             new main().setVisible(true);
         });
     }
-
-
-    
 }

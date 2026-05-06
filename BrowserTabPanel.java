@@ -1,8 +1,10 @@
 import java.awt.*;
 import java.io.*;
-import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.net.Socket; 
 import javax.swing.*;
 import javax.swing.event.*;
+
 
 public class BrowserTabPanel extends JPanel {
 
@@ -27,9 +29,9 @@ public class BrowserTabPanel extends JPanel {
         });
         
         add(renderizador, BorderLayout.CENTER);
-
         setupListeners();
     }
+
     private JPanel createSearchPanel() {
         JPanel panelTop = new JPanel(new GridBagLayout());
         panelTop.setBackground(new Color(245, 245, 245)); 
@@ -81,19 +83,33 @@ public class BrowserTabPanel extends JPanel {
                 procesarURLweb(localBuscador.getText(), renderizador);
             }
         });
-    
+
         localBuscador.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { actualizarBotonLocal(); }
+            @Override public void removeUpdate(DocumentEvent e) { actualizarBotonLocal(); }
+            @Override public void changedUpdate(DocumentEvent e) { actualizarBotonLocal(); }
+        });
+
+        localBoton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void insertUpdate(DocumentEvent e) { actualizarBotonLocal(); }
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                if (!localBuscador.getText().trim().isEmpty()) {
+                    localBoton.setBackground(new Color(72, 93, 114)); 
+                } else {
+                    localBoton.setBackground(new Color(160, 160, 160));
+                }
+            }
+
             @Override
-            public void removeUpdate(DocumentEvent e) { actualizarBotonLocal(); }
-            @Override
-            public void changedUpdate(DocumentEvent e) { actualizarBotonLocal(); }
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                actualizarBotonLocal();
+            }
         });
     }
 
     private void actualizarBotonLocal() {
         boolean tieneTexto = !localBuscador.getText().trim().isEmpty();
+        
         if(!tieneTexto) {
             localBoton.setBackground(new Color(180, 180, 180)); 
             localBoton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
@@ -104,71 +120,43 @@ public class BrowserTabPanel extends JPanel {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     private void procesarURLweb(String texto, Renderizador renderizador) {
-        // mediante el texto.trim eliminamos los espacios en blanco de los url        
+        // mediante el texto.trim eliminamos los espacios en blanco de los url         
         String url = texto.trim();
-        //este if hace que en caso de que la busqueda del browser no contenga "http://" o "https://" se le agregue al principio
+        
+        // este if hace que en caso de que la busqueda del browser no contenga "http://" o "https://" se le agregue al principio
+        // Esto valida que la URL sea absoluta
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            url = "https://" + url;
+            url = "http://" + url;
         }
         
-        //mensaje de carga
+        final String urlFinal = url;
+        
+        // mensaje de carga
         mainFrame.etiquetaEstado.setText("Cargando...");
         mainFrame.etiquetaEstado.setForeground(new Color(41, 128, 185)); 
-        //try y catch de conexión con el render
-        
-        
-        try {
-            String respuesta = peticionHttpGET(url);
-            renderizador.cargarURL(respuesta);
-        //aquí debería ir el error por tiempo de conexion del timer yo cacho
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(mainFrame,
-               "Error al cargar la página: " + e.getMessage(),
-               "Error", JOptionPane.ERROR_MESSAGE);
-        }
-        //mensaje de listo
-        mainFrame.etiquetaEstado.setText("Listo");
-        mainFrame.etiquetaEstado.setForeground(new Color(100,100,100));
 
+        // Usamos un Thread para que el timer no congele la ventana
+        new Thread(() -> {
+            try {
+                // El metodo ahora devuelve un String[]: [0] es el Código de estado, [1] es el HTML
+                String[] respuesta = peticionHttpGET(urlFinal);
+                
+                SwingUtilities.invokeLater(() -> {
+                    renderizador.cargarURL(respuesta[1]);
+                    // mensaje de listo y el codigo de estado
+                    mainFrame.etiquetaEstado.setText(respuesta[0]);
+                    mainFrame.etiquetaEstado.setForeground(new Color(46, 204, 113));
+                });
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(() -> {
+                    mainFrame.etiquetaEstado.setText("Error");
+                    mainFrame.etiquetaEstado.setForeground(Color.RED);
+                    JOptionPane.showMessageDialog(mainFrame, "Error al cargar la página: " + e.getMessage());
+                });
+            }
+        }).start();
     }
-
-
-			
-/* codigo de timer modificado para encajar en el codigo
-
-        String s = (String) CompletableFuture.supplyAsync(() -> {
-            return null;
-        }).get(10, TimeUnit.SECONDS);
-    } catch (TimeoutException | ExecutionException e) {
-        System.out.println("Limite de tiempo excedido");
-    } catch (InterruptedException | CommandLine.ExecutionException e) 
-    
- */
-
 
     public void aplicarTemaVisual(Color fondo, Color texto) {
         if (renderizador != null) {
@@ -176,63 +164,92 @@ public class BrowserTabPanel extends JPanel {
         }
     }
 
-
-    //metodo que realiza la conexión TCP y la conexion GET
-    public static String peticionHttpGET(String url){
-        //establecemos el puerto 80 que es para urls con dominio}
+    // metodo que realiza la conexión TCP y la conexion GET
+    public static String[] peticionHttpGET(String url){
+        // establecemos el puerto 80
         int puerto = 80; 
-       //El StringBuilder es un String al cual se le puede ir agregando texto como una lista. Lo usamos para recibir la respuesta del servidor y despues convertirlo a String
-        StringBuilder respuesta = new StringBuilder();
+        // El StringBuilder es un String al cual se le puede ir agregando texto como una lista 
+        // Lo usamos para recibir la respuesta del servidor y despues convertirlo a String
+        String[] resultado = new String[2]; 
+        StringBuilder cuerpo = new StringBuilder();
+        String codigoEstado = "Desconocido";
 
-        try{
+        try {
             String host = url;
             String ruta = "/";
-            //creamos dos variables, host para contener la url sin el http que se lo quitaremos luego, y la ruta donde se guardará todo lo sigueinte a un posible slash despues del dominio (tipo "www.google.com/search" se guarda el "search" )
+            // creamos dos variables, host para contener la url sin el http que se lo quitaremos luego, 
+            // y la ruta donde se guardara todo lo sigueinte a un posible slash despues del dominio
 
-            if(host.startsWith("http://")){
-                host = host.substring(7);
-            }
-            else if(host.startsWith("https://")){
-                host = host.substring(8);
-            }
-            //con estos if y los substring, eliminaremos las etiquetas http/s:// (el substring se salta el número puesto de indices y guarda desde donde se pide )
+            if(host.startsWith("http://")) host = host.substring(7);
+            else if(host.startsWith("https://")) host = host.substring(8);
+            // con estos if y los substring se eliminan las etiquetas http/s://
 
             int indiceslash = host.indexOf("/");
             if(indiceslash != -1){
                 ruta = host.substring(indiceslash);
                 host = host.substring(0, indiceslash);
             }
-            //con el indiceslash guardaremos el indice en el que se encuentra el slash de la ruta, y con los substring guardaremos la ruta y el host por separado (el host se guarda desde el inicio hasta el slash, y la ruta se guarda desde el slash hasta el final)                  
-                    //try que permite la conexión TCP, el envio de la peticion get y la recepcion de la respuesta del servidor 
-                    //El PrintWritter la usamos para enviar la petición al servidor y el BufferedReader para recibir la respuesta
-                    try(Socket socket = new Socket(host, puerto);
-                        PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-                            
-                            
-                            //Esta lista de prints son para depurar y verificar que el host y la ruta se hayan separado correctamente
-                            //A su vez, el print de la petición GET es para verificar que se esté enviando correctamente al servidor
-                            writer.println("GET "+ruta+" HTTP/1.1");
-                            writer.println("Host: " + host);
-                            writer.println("Connection: close");
-                            writer.println();
-                            String linea;
-                            //este while se encarga de leer la respuesta del servidor línea por línea y agregarla al StringBuilder
-                            while ((linea = reader.readLine()) != null){
-                                respuesta.append(linea).append("\n");
+            // con el indiceslash guardaremos el indice en el que se encuentra el slash de la ruta, 
+            // y con los substring guardaremos la ruta y el host por separado
 
-                            }
+            // Establecer conexión TCP con el servidor web en el puerto 80
+            Socket socket = new Socket();
+            // Manejar timeouts  de los 10 segundos
+            socket.connect(new InetSocketAddress(host, puerto), 10000);
+            socket.setSoTimeout(10000);
 
+            // try que permite la conexión TCP, el envio de la peticion get y la recepcion de la respuesta del servidor 
+            // El PrintWriter la usamos para enviar la petición al servidor y el BufferedReader para recibir la respuesta
+            try(PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                
+                // Enviar solicitud HTTP GET con headers básicos
+                writer.print("GET " + ruta + " HTTP/1.1\r\n");
+                writer.print("Host: " + host + "\r\n");
+                writer.print("User-Agent: ClienteHTTP/1.0\r\n");
+                writer.print("Connection: close\r\n\r\n");
+                writer.flush();
+
+                String linea;
+                boolean esPrimeraLinea = true;
+                boolean esCuerpo = false;
+
+                // este while se encarga de leer la respuesta del servidor línea por línea y agregarla al StringBuilder
+                while ((linea = reader.readLine()) != null){
+                    // Recibir y almacenar la respuesta: código de estado
+                    if (esPrimeraLinea) {
+                        if(linea.contains(" ")) {
+                            codigoEstado = linea.substring(linea.indexOf(" ") + 1);
+                        }
+                        esPrimeraLinea = false;
+                        continue;
                     }
-        }
-        //este catch es para notificar en caso de error en la conexión o en la petición
-        catch (IOException e) {
-            //necesario para poder ver el error en la consola
-            e.printStackTrace();
-            return "Error al realizar la petición: " + e.getMessage();
-        }
-        //retornamos la respuesta del servidor convertida a String
-        return respuesta.toString();
-    }
 
+                    // Separador de headers y cuerpo
+                    if (linea.isEmpty() && !esCuerpo) {
+                        esCuerpo = true;
+                        continue;
+                    }
+
+                    // Almacenamos el cuerpo HTML
+                    if (esCuerpo) {
+                        cuerpo.append(linea).append("\n");
+                    }
+                }
+            }
+            socket.close();
+        } catch (java.net.SocketTimeoutException e) {
+            codigoEstado = "408 Timeout";
+            cuerpo.append("<html><body>Limite de tiempo excedido (10s)</body></html>");
+        } catch (IOException e) {
+            // para poder ver el error en la consola
+            e.printStackTrace();
+            codigoEstado = "Error de Red";
+        }
+
+        // retornamos la respuesta del servidor: [0] es el estado, [1] es el HTML convertido a String
+        resultado[0] = codigoEstado;
+        resultado[1] = cuerpo.toString();
+        return resultado;
+    }
 }

@@ -23,8 +23,6 @@ catch (IOException | InterruptedException e) {
         	}
 
 
-
-
 /*
 
 //PRUEBA DE CONEXION TCP
