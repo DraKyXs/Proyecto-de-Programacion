@@ -142,6 +142,30 @@ public @ResponseBody ResponseEntity<TransaccionDTO> iniciarTransaccion() throws 
     return new ResponseEntity<TransaccionDTO>(transaccion, HttpStatus.valueOf(200));
 }
  */
+/* codigo para leer el estado de la pagina web, almacenar la respuesta de los header y el body a pesar de que el body de ya estaba implementado en el render anteriormente
+String statusCode = "";
+Map headers = new HashMap<>();
+StringBuilder body = new StringBuilder();
 
+// lee el estado de la pagina web
+statusCode = reader.readLine();
+
+
+String line;
+while ((line = reader.readLine()) != null && !line.isEmpty()) {
+int separatorIndex = line.indexOf(":");
+if (separatorIndex != -1) {
+String key = line.substring(0, separatorIndex).trim();
+String value = line.substring(separatorIndex + 1).trim();
+headers.put(key, value);
+}
+}
+
+// leer el body similar al codigo del render anterior
+while ((line = reader.readLine()) != null) {
+body.append(line).append("\n");
+}
+
+*/
     }
 }
