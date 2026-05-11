@@ -6,12 +6,18 @@ import javax.swing.*;
 import javax.swing.event.*;
 
 
+
+
 public class BrowserTabPanel extends JPanel {
 
     private final main mainFrame;
     private JTextField localBuscador;
     private JButton localBoton;
     public Renderizador renderizador;
+    private String urlActual = "";
+    private String urlAnterior = "";
+    private JButton btnAtras;
+    private JButton btnAdelante;
 
     public BrowserTabPanel(main mainFrame) {
         this.mainFrame = mainFrame;
@@ -37,6 +43,12 @@ public class BrowserTabPanel extends JPanel {
         panelTop.setBackground(new Color(245, 245, 245)); 
         panelTop.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         GridBagConstraints gbc = new GridBagConstraints();
+
+        btnAtras = crearBotonNav("<");
+        btnAdelante = crearBotonNav(">");
+
+        btnAtras.addActionListener(e -> irAtras());
+        btnAdelante.addActionListener(e -> irAdelante());
 
         localBuscador = new JTextField(25); 
         localBuscador.setBackground(Color.WHITE);
@@ -67,8 +79,52 @@ public class BrowserTabPanel extends JPanel {
         gbc.fill = GridBagConstraints.NONE; 
         gbc.weightx = 0; 
         panelTop.add(localBoton, gbc);
+        gbc.gridx = 0; gbc.gridy = 0; gbc.insets = new Insets(0, 0, 0, 5);
+        panelTop.add(btnAtras, gbc);
+        gbc.gridx = 1;
+        panelTop.add(btnAdelante, gbc);
+        gbc.gridx = 2; 
+        gbc.weightx = 1.0; 
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(0, 5, 0, 5);
+        panelTop.add(localBuscador, gbc);
+        gbc.gridx = 3; 
+        gbc.weightx = 0; 
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        panelTop.add(localBoton, gbc);
 
         return panelTop;
+    }
+
+    private JButton crearBotonNav(String texto) {
+    JButton btn = new JButton(texto);
+    btn.setFont(new Font("Arial", Font.BOLD, 18));
+    btn.setPreferredSize(new Dimension(45, 35));
+    btn.setFocusPainted(false);
+    btn.setBorderPainted(false);
+    btn.setBackground(new Color(230, 230, 230));
+    btn.setForeground(new Color(60, 60, 60));
+    return btn;
+}
+
+    private void irAtras() {
+        if (!urlAnterior.isEmpty()) {
+            String temp = urlActual;
+            urlActual = urlAnterior;
+            urlAnterior = temp; 
+
+            localBuscador.setText(urlActual);
+            procesarURLweb(urlActual, renderizador);
+            actualizarBotones();
+        }
+    }
+    private void irAdelante() {
+        irAtras();
+    }
+    private void actualizarBotones() {
+        btnAtras.setEnabled(!urlAnterior.isEmpty());
+        btnAdelante.setEnabled(!urlAnterior.isEmpty()); 
     }
 
     private void setupListeners() {
@@ -131,6 +187,12 @@ public class BrowserTabPanel extends JPanel {
         }
         
         final String urlFinal = url;
+
+        //este if es para guardar el url, el actual pasa a ser el anterior
+        if (!urlFinal.equals(urlActual)) {
+        urlAnterior = urlActual;
+        urlActual = urlFinal;
+    }
         
         // mensaje de carga
         mainFrame.etiquetaEstado.setText("Cargando...");
@@ -192,7 +254,7 @@ public class BrowserTabPanel extends JPanel {
             // con el indiceslash guardaremos el indice en el que se encuentra el slash de la ruta, 
             // y con los substring guardaremos la ruta y el host por separado
 
-            // Establecer conexión TCP con el servidor web en el puerto 80
+            // Establecemos conexión TCP con el servidor web en el puerto 80
             Socket socket = new Socket();
             // Manejar timeouts  de los 10 segundos
             socket.connect(new InetSocketAddress(host, puerto), 10000);
