@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "main",
+            "request": "launch",
+            "mainClass": "main",
+            "projectName": "Proyecto-de-Programacion_d3603b09"
+        },
+        {
+            "type": "java",
             "name": "leo",
             "request": "launch",
             "mainClass": "leo",
