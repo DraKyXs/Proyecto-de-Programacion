@@ -17,14 +17,13 @@ public class CustomTabHeader extends JPanel {
         btnCerrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         btnCerrar.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { 
-                btnCerrar.setForeground(Color.RED);
-                System.out.println(sistemaPestanas.getSize()); }
-            public void mouseExited(MouseEvent e) { btnCerrar.setForeground(new Color(150, 150, 150)); }
-            public void mousePressed(MouseEvent e) {
+            public void mousePressed (MouseEvent e){
                 int i = sistemaPestanas.indexOfComponent(panelContenido);
-                if (i != -1) {
+                int indiceUltima = sistemaPestanas.getTabCount() -1;
+                if (i != -1 && i < indiceUltima ){
                     sistemaPestanas.remove(i);
+                } else {
+                    System.out.println("No se puede cerrar la pestaña");
                 }
             }
         });
