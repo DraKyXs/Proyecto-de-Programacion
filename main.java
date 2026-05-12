@@ -23,9 +23,6 @@ public class main extends JFrame {
         hacerRedimensionable(sistemaPestanas); 
         add(sistemaPestanas, BorderLayout.CENTER);
         
-        // ---------------- BARRA DE ESTADO GLOBAL --------------------
-        add(new StatusBar(this), BorderLayout.SOUTH);
-        
         
         sistemaPestanas.addTab("", new JPanel()); 
         
@@ -76,6 +73,10 @@ public class main extends JFrame {
     // ==================================================================================================================================================
     public void abrirNuevaPestana() {
         JPanel panelContenido = new BrowserTabPanel(this);
+
+        //Barra de estado local para cada pestañaaaaaa
+        panelContenido.add(new StatusBar(this), BorderLayout.SOUTH);
+        
         String titulo = "Buscador "+contadorPestanas++;
         
         int posicion = sistemaPestanas.getTabCount()-1;
