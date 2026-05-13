@@ -14,10 +14,11 @@ public class BrowserTabPanel extends JPanel {
     private JTextField localBuscador;
     private JButton localBoton;
     public Renderizador renderizador;
-    private String urlActual = "";
-    private String urlAnterior = "";
+    private String urlActual = "";   //Esto se hara mas adelante cuando se implementen los botones de navegacion, por ahora no es necesario guardar el url actual ni el anterior
+    private String urlAnterior = ""; //Esto se hara mas adelante cuando se implementen los botones de navegacion, por ahora no es necesario guardar el url actual ni el anterior
     private JButton btnAtras;
     private JButton btnAdelante;
+    private Historial historial = new Historial();
 
     public BrowserTabPanel(main mainFrame) {
         this.mainFrame = mainFrame;
@@ -109,6 +110,8 @@ public class BrowserTabPanel extends JPanel {
     return btn;
 }
 
+// Funciones para botones de navegacion que se implementaran correctamente mas adelante
+
     private void irAtras() {
         if (!urlAnterior.isEmpty()) {
             String temp = urlActual;
@@ -127,7 +130,7 @@ public class BrowserTabPanel extends JPanel {
         btnAtras.setEnabled(!urlAnterior.isEmpty());
         btnAdelante.setEnabled(!urlAnterior.isEmpty()); 
     }
-
+//-----
     private void setupListeners() {
         localBoton.addActionListener(e -> {
             if(!localBuscador.getText().trim().isEmpty()){
@@ -189,11 +192,7 @@ public class BrowserTabPanel extends JPanel {
         
         final String urlFinal = url;
 
-        //este if es para guardar el url, el actual pasa a ser el anterior
-        if (!urlFinal.equals(urlActual)) {
-        urlAnterior = urlActual;
-        urlActual = urlFinal;
-    }
+       
         
         // mensaje de carga
         mainFrame.etiquetaEstado.setText("Cargando...");
@@ -207,6 +206,7 @@ public class BrowserTabPanel extends JPanel {
                 
                 SwingUtilities.invokeLater(() -> {
                     renderizador.cargarURL(respuesta[1]);
+                    historial.visitar(urlFinal);
                     // mensaje de listo y el codigo de estado
                     mainFrame.etiquetaEstado.setText(respuesta[0]);
                     mainFrame.etiquetaEstado.setForeground(new Color(46, 204, 113));
