@@ -32,7 +32,8 @@ public class BrowserTabPanel extends JPanel {
         
         renderizador.setNavegacionListener(nuevaRuta -> {
             localBuscador.setText(nuevaRuta); 
-            procesarURLweb(nuevaRuta, renderizador); 
+            procesarURLweb(nuevaRuta, renderizador);
+             
         });
         
         add(renderizador, BorderLayout.CENTER);
