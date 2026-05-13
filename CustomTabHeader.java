@@ -15,19 +15,19 @@ public class CustomTabHeader extends JPanel {
         btnCerrar.setFont(new Font("Arial", Font.BOLD, 16));
         btnCerrar.setForeground(new Color(150, 150, 150));
         btnCerrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
         btnCerrar.addMouseListener(new MouseAdapter() {
-            public void mousePressed (MouseEvent e){
-                int i = sistemaPestanas.indexOfComponent(panelContenido);
-                int indiceUltima = sistemaPestanas.getTabCount() -1;
-                if (i != -1 && i < indiceUltima ){
-                    sistemaPestanas.remove(i);
+            @Override
+            public void mousePressed(MouseEvent e) {
+                int miIndice = sistemaPestanas.indexOfTabComponent(CustomTabHeader.this);
+                int indiceUltimaReal = sistemaPestanas.getTabCount() - 2; // la última pestaña de contenido real
+
+                if (miIndice != -1 && miIndice < indiceUltimaReal) {
+                    sistemaPestanas.remove(miIndice);
                 } else {
-                    System.out.println("No se puede cerrar la pestaña");
+                    System.out.println("Acción bloqueada: no se puede cerrar la última pestaña de contenido.");
                 }
             }
         });
-
         add(lblTitulo);
         add(btnCerrar);
     }
