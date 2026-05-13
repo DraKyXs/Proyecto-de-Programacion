@@ -38,10 +38,17 @@ public class Renderizador extends JPanel {
     public void setNavegacionListener(NavegacionListener listener) {
         this.listener = listener;
     }
+   
+
+
+
+
+
 
     public void cargarURL(String contenidoURL) {
         //cambié el metodo por este para que sea especifico de URL y no de local, a demas puse prints porque me estaba dando errores que no se mostraban en el render y los tiré a la consola
-        if(contenidoURL != null ){
+        if(contenidoURL != null ){ 
+            areaContenido.setContentType("text/html");
             areaContenido.setText(contenidoURL);
             System.out.println(contenidoURL);
         } else {
@@ -52,6 +59,15 @@ public class Renderizador extends JPanel {
         areaContenido.setCaretPosition(0);
         //barra de scroll que se resetea cada vez que carga un URL nuevo
     }
+
+
+
+
+
+
+
+
+
 
     private void manejarEventosEnlace(HyperlinkEvent e) {
         if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
