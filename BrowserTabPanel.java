@@ -1,49 +1,70 @@
 import java.awt.*;
-import java.io.*;
-import java.net.InetSocketAddress;
-import java.net.Socket; 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import javax.swing.event.*;
 
-
-
-
 public class BrowserTabPanel extends JPanel {
 
+    // Referencia a la ventana principal.
+    // La usamos para cambiar la barra de estado y para leer el tema visual actual.
     private final main mainFrame;
+
+    // Campo de texto donde el usuario escribe la URL.
     private JTextField localBuscador;
+
+    // Boton que sirve para cargar la pagina escrita.
     private JButton localBoton;
+
+    // Componente encargado de mostrar el HTML.
     public Renderizador renderizador;
+
+    // Variables simples para la navegacion original del proyecto.
+    // Por ahora no representan un historial real completo.
     private String urlActual = "";   //Esto se hara mas adelante cuando se implementen los botones de navegacion, por ahora no es necesario guardar el url actual ni el anterior
     private String urlAnterior = ""; //Esto se hara mas adelante cuando se implementen los botones de navegacion, por ahora no es necesario guardar el url actual ni el anterior
+
+    // Botones de atras y adelante.
     private JButton btnAtras;
     private JButton btnAdelante;
+
+    // Historial simple de URLs visitadas.
     private Historial historial = new Historial();
 
     public BrowserTabPanel(main mainFrame) {
         this.mainFrame = mainFrame;
-        setLayout(new BorderLayout()); 
+        setLayout(new BorderLayout());
 
         JPanel panelTop = createSearchPanel();
-        add(panelTop, BorderLayout.NORTH); 
+        add(panelTop, BorderLayout.NORTH);
 
         renderizador = new Renderizador();
         renderizador.aplicarTemaVisual(mainFrame.getFondoActual(), mainFrame.getTextoActual());
-        
+
+        // Si se hace click en un enlace de texto dentro del HTML,
+        // el renderizador nos avisa y volvemos a procesar esa nueva URL.
         renderizador.setNavegacionListener(nuevaRuta -> {
-            localBuscador.setText(nuevaRuta); 
+            localBuscador.setText(nuevaRuta);
             procesarURLweb(nuevaRuta, renderizador);
-             
         });
-        
+
         add(renderizador, BorderLayout.CENTER);
         setupListeners();
+        actualizarBotones();
     }
 
     private JPanel createSearchPanel() {
+        // Este panel contiene botones de navegacion, buscador y boton Ir.
         JPanel panelTop = new JPanel(new GridBagLayout());
-        panelTop.setBackground(new Color(245, 245, 245)); 
+        panelTop.setBackground(new Color(245, 245, 245));
         panelTop.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
         GridBagConstraints gbc = new GridBagConstraints();
 
         btnAtras = crearBotonNav("<");
@@ -52,46 +73,40 @@ public class BrowserTabPanel extends JPanel {
         btnAtras.addActionListener(e -> irAtras());
         btnAdelante.addActionListener(e -> irAdelante());
 
-        localBuscador = new JTextField(25); 
+        localBuscador = new JTextField(25);
         localBuscador.setBackground(Color.WHITE);
         localBuscador.setForeground(new Color(60, 60, 60));
         localBuscador.setCaretColor(new Color(100, 100, 100));
         localBuscador.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(new Color(180, 180, 180), 1),
-            BorderFactory.createEmptyBorder(6, 10, 6, 10) 
+            BorderFactory.createEmptyBorder(6, 10, 6, 10)
         ));
-        
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL; 
-        gbc.weightx = 1.0; 
-        panelTop.add(localBuscador, gbc);
 
-        localBoton = new JButton("Ir"); 
+        localBoton = new JButton("Ir");
         localBoton.setFont(new Font("Arial", Font.BOLD, 13));
         localBoton.setFocusPainted(false);
         localBoton.setBorderPainted(false);
         localBoton.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        localBoton.setBackground(new Color(180, 180, 180)); 
-        localBoton.setForeground(Color.WHITE); 
+        localBoton.setBackground(new Color(180, 180, 180));
+        localBoton.setForeground(Color.WHITE);
         localBoton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 
-        gbc.gridx = 1;
+        gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.NONE; 
-        gbc.weightx = 0; 
-        panelTop.add(localBoton, gbc);
-        gbc.gridx = 0; gbc.gridy = 0; gbc.insets = new Insets(0, 0, 0, 5);
+        gbc.insets = new Insets(0, 0, 0, 5);
         panelTop.add(btnAtras, gbc);
+
         gbc.gridx = 1;
         panelTop.add(btnAdelante, gbc);
-        gbc.gridx = 2; 
-        gbc.weightx = 1.0; 
+
+        gbc.gridx = 2;
+        gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(0, 5, 0, 5);
         panelTop.add(localBuscador, gbc);
-        gbc.gridx = 3; 
-        gbc.weightx = 0; 
+
+        gbc.gridx = 3;
+        gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
         gbc.insets = new Insets(0, 0, 0, 0);
         panelTop.add(localBoton, gbc);
@@ -100,61 +115,83 @@ public class BrowserTabPanel extends JPanel {
     }
 
     private JButton crearBotonNav(String texto) {
-    JButton btn = new JButton(texto);
-    btn.setFont(new Font("Arial", Font.BOLD, 18));
-    btn.setPreferredSize(new Dimension(45, 35));
-    btn.setFocusPainted(false);
-    btn.setBorderPainted(false);
-    btn.setBackground(new Color(230, 230, 230));
-    btn.setForeground(new Color(60, 60, 60));
-    return btn;
-}
+        // Esta funcion crea un boton de navegacion con el mismo estilo visual.
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Arial", Font.BOLD, 18));
+        btn.setPreferredSize(new Dimension(45, 35));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setBackground(new Color(230, 230, 230));
+        btn.setForeground(new Color(60, 60, 60));
+        return btn;
+    }
 
 // Funciones para botones de navegacion que se implementaran correctamente mas adelante
 
     private void irAtras() {
+        // Si existe una URL anterior, intercambiamos la actual por la anterior.
         if (!urlAnterior.isEmpty()) {
             String temp = urlActual;
             urlActual = urlAnterior;
-            urlAnterior = temp; 
+            urlAnterior = temp;
 
             localBuscador.setText(urlActual);
             procesarURLweb(urlActual, renderizador);
             actualizarBotones();
         }
     }
+
     private void irAdelante() {
+        // En el proyecto original este boton usaba la misma logica del boton atras.
         irAtras();
     }
+
     private void actualizarBotones() {
+        // Si no hay URL anterior, ambos botones se desactivan.
         btnAtras.setEnabled(!urlAnterior.isEmpty());
-        btnAdelante.setEnabled(!urlAnterior.isEmpty()); 
+        btnAdelante.setEnabled(!urlAnterior.isEmpty());
     }
+
 //-----
     private void setupListeners() {
+        // Si se presiona el boton Ir y el campo no esta vacio, cargamos la URL.
         localBoton.addActionListener(e -> {
-            if(!localBuscador.getText().trim().isEmpty()){
+            if (!localBuscador.getText().trim().isEmpty()) {
                 procesarURLweb(localBuscador.getText(), renderizador);
             }
         });
-        
+
+        // Si se presiona Enter dentro del buscador, hacemos lo mismo que con el boton Ir.
         localBuscador.addActionListener(e -> {
-            if(!localBuscador.getText().trim().isEmpty()){
+            if (!localBuscador.getText().trim().isEmpty()) {
                 procesarURLweb(localBuscador.getText(), renderizador);
             }
         });
 
+        // Este listener detecta si el texto cambia para actualizar el aspecto del boton.
         localBuscador.getDocument().addDocumentListener(new DocumentListener() {
-            @Override public void insertUpdate(DocumentEvent e) { actualizarBotonLocal(); }
-            @Override public void removeUpdate(DocumentEvent e) { actualizarBotonLocal(); }
-            @Override public void changedUpdate(DocumentEvent e) { actualizarBotonLocal(); }
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                actualizarBotonLocal();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                actualizarBotonLocal();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                actualizarBotonLocal();
+            }
         });
 
+        // Efecto hover del boton Ir.
         localBoton.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 if (!localBuscador.getText().trim().isEmpty()) {
-                    localBoton.setBackground(new Color(72, 93, 114)); 
+                    localBoton.setBackground(new Color(72, 93, 114));
                 } else {
                     localBoton.setBackground(new Color(160, 160, 160));
                 }
@@ -168,54 +205,67 @@ public class BrowserTabPanel extends JPanel {
     }
 
     private void actualizarBotonLocal() {
+        // Revisamos si el usuario escribio algo.
         boolean tieneTexto = !localBuscador.getText().trim().isEmpty();
-        
-        if(!tieneTexto) {
-            localBoton.setBackground(new Color(180, 180, 180)); 
-            localBoton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
+
+        // Si no hay texto, el boton parece inactivo.
+        if (!tieneTexto) {
+            localBoton.setBackground(new Color(180, 180, 180));
+            localBoton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         } else {
-            localBoton.setBackground(new Color(52, 73, 94)); 
-            localBoton.setCursor(new Cursor(Cursor.HAND_CURSOR)); 
+            // Si si hay texto, el boton parece activo.
+            localBoton.setBackground(new Color(52, 73, 94));
+            localBoton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         }
     }
 
-
     private void procesarURLweb(String texto, Renderizador renderizador) {
-        // mediante el texto.trim eliminamos los espacios en blanco de los url         
-        String url = texto.trim();
-        
-        // este if hace que en caso de que la busqueda del browser no contenga "http://" o "https://" se le agregue al principio
-        // Esto valida que la URL sea absoluta
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            url = "http://" + url;
+        // Quitamos espacios al inicio y al final.
+        String textoLimpio = texto.trim();
+
+        // Revisamos si el usuario ya escribio http:// o https://
+        boolean teniaHttp = textoLimpio.startsWith("http://");
+        boolean teniaHttps = textoLimpio.startsWith("https://");
+
+        // Si no escribio protocolo, intentamos primero con https://
+        if (!teniaHttp && !teniaHttps) {
+            textoLimpio = "https://" + textoLimpio;
         }
-        
-        final String urlFinal = url;
 
-       
-        
-        // mensaje de carga
+        final String urlFinal = textoLimpio;
+
+        // Esta variable nos dice si despues podemos intentar un fallback a http.
+        final boolean usarFallbackHttp = !teniaHttp && !teniaHttps;
+
+        // Mensaje visual mientras carga la pagina.
         mainFrame.etiquetaEstado.setText("Cargando...");
-        mainFrame.etiquetaEstado.setForeground(new Color(41, 128, 185)); 
+        mainFrame.etiquetaEstado.setForeground(new Color(41, 128, 185));
 
-        // Usamos un Thread para que el timer no congele la ventana
+        // Usamos un Thread para que la interfaz no se congele.
         new Thread(() -> {
             try {
-                // El metodo ahora devuelve un String[]: [0] es el Código de estado, [1] es el HTML
-                String[] respuesta = peticionHttpGET(urlFinal);
-                
+                RespuestaHttp respuesta = peticionHttpGET(urlFinal);
+
+                // Si el usuario no escribio protocolo y el primer intento falla de forma recuperable,
+                // intentamos la misma direccion por http.
+                if (usarFallbackHttp && respuesta.permiteFallbackHttp()) {
+                    respuesta = peticionHttpGET("http://" + texto.trim());
+                }
+
+                final RespuestaHttp respuestaFinal = respuesta;
+
                 SwingUtilities.invokeLater(() -> {
-                    renderizador.cargarURL(respuesta[1]);
-                    historial.visitar(urlFinal);
-                    // mensaje de listo y el codigo de estado
-                    mainFrame.etiquetaEstado.setText(respuesta[0]);
+                    renderizador.cargarURL(respuestaFinal.cuerpoHtml, respuestaFinal.urlFinal);
+                    localBuscador.setText(respuestaFinal.urlFinal);
+                    historial.visitar(respuestaFinal.urlFinal);
+                    mainFrame.etiquetaEstado.setText(respuestaFinal.codigoEstado);
                     mainFrame.etiquetaEstado.setForeground(new Color(46, 204, 113));
                 });
             } catch (Exception e) {
                 SwingUtilities.invokeLater(() -> {
                     mainFrame.etiquetaEstado.setText("Error");
                     mainFrame.etiquetaEstado.setForeground(Color.RED);
-                    JOptionPane.showMessageDialog(mainFrame, "Error al cargar la página: " + e.getMessage());
+                    JOptionPane.showMessageDialog(mainFrame, "Error al cargar la pagina: " + e.getMessage());
                 });
             }
         }).start();
@@ -227,92 +277,202 @@ public class BrowserTabPanel extends JPanel {
         }
     }
 
-    // metodo que realiza la conexión TCP y la conexion GET
-    public static String[] peticionHttpGET(String url){
-        // establecemos el puerto 80
-        int puerto = 80; 
-        // El StringBuilder es un String al cual se le puede ir agregando texto como una lista 
-        // Lo usamos para recibir la respuesta del servidor y despues convertirlo a String
-        String[] resultado = new String[2]; 
-        StringBuilder cuerpo = new StringBuilder();
-        String codigoEstado = "Desconocido";
+    public static RespuestaHttp peticionHttpGET(String urlTexto) {
+        // Esta funcion hace toda la conexion.
+        // La idea es que la parte de red quede aqui y no arriba en una variable global.
+
+        HttpURLConnection conexion = null;
+        String urlActualPeticion = urlTexto;
 
         try {
-            String host = url;
-            String ruta = "/";
-            // creamos dos variables, host para contener la url sin el http que se lo quitaremos luego, 
-            // y la ruta donde se guardara todo lo sigueinte a un posible slash despues del dominio
+            // Usamos un while por si la pagina redirige a otra.
+            while (true) {
+                URL url = construirURLValida(urlActualPeticion);
 
-            if(host.startsWith("http://")) host = host.substring(7);
-            else if(host.startsWith("https://")) host = host.substring(8);
-            // con estos if y los substring se eliminan las etiquetas http/s://
+                // Si es https usamos HttpsURLConnection.
+                // Si es http usamos HttpURLConnection normal.
+                if (url.getProtocol().equalsIgnoreCase("https")) {
+                    conexion = (HttpsURLConnection) url.openConnection();
+                } else {
+                    conexion = (HttpURLConnection) url.openConnection();
+                }
 
-            int indiceslash = host.indexOf("/");
-            if(indiceslash != -1){
-                ruta = host.substring(indiceslash);
-                host = host.substring(0, indiceslash);
+                // Configuracion basica de la conexion.
+                conexion.setRequestMethod("GET");
+                conexion.setConnectTimeout(10000);
+                conexion.setReadTimeout(10000);
+                conexion.setInstanceFollowRedirects(false);
+                conexion.setRequestProperty("User-Agent", "Mozilla/5.0 CodexBrowser/1.0");
+                conexion.setRequestProperty("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+                conexion.setRequestProperty("Accept-Language", "es-ES,es;q=0.9,en;q=0.8");
+                conexion.setRequestProperty("Accept-Encoding", "identity");
+
+                // Leemos el codigo de respuesta del servidor.
+                int codigo = conexion.getResponseCode();
+
+                // Si el servidor responde con redireccion, buscamos la nueva direccion.
+                if (codigo == HttpURLConnection.HTTP_MOVED_PERM || codigo == HttpURLConnection.HTTP_MOVED_TEMP || codigo == HttpURLConnection.HTTP_SEE_OTHER || codigo == 307 || codigo == 308) {
+
+                    String nuevaUbicacion = conexion.getHeaderField("Location");
+
+                    // Si no vino ubicacion nueva, salimos del while.
+                    if (nuevaUbicacion == null || nuevaUbicacion.isBlank()) {
+                        break;
+                    }
+
+                    // Construimos la nueva URL tomando en cuenta que podria ser relativa.
+                    URL urlRedirigida = new URL(url, nuevaUbicacion);
+                    urlActualPeticion = urlRedirigida.toString();
+
+                    // Cerramos la conexion actual y repetimos el ciclo con la nueva URL.
+                    conexion.disconnect();
+                    conexion = null;
+                    continue;
+                }
+
+                // Si no hubo redireccion, ya tenemos la respuesta final.
+                break;
             }
-            // con el indiceslash guardaremos el indice en el que se encuentra el slash de la ruta, 
-            // y con los substring guardaremos la ruta y el host por separado
 
-            // Establecemos conexión TCP con el servidor web en el puerto 80
-            Socket socket = new Socket();
-            // Manejar timeouts  de los 10 segundos
-            socket.connect(new InetSocketAddress(host, puerto), 10000);
-            socket.setSoTimeout(10000);
+            int codigoFinal = conexion.getResponseCode();
+            String codigoEstado = codigoFinal + " " + descripcionEstado(codigoFinal);
 
-            // try que permite la conexión TCP, el envio de la peticion get y la recepcion de la respuesta del servidor 
-            // El PrintWriter la usamos para enviar la petición al servidor y el BufferedReader para recibir la respuesta
-            try(PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
-                
-                // Enviar solicitud HTTP GET con headers básicos
-                writer.print("GET " + ruta + " HTTP/1.1\r\n");
-                writer.print("Host: " + host + "\r\n");
-                writer.print("User-Agent: ClienteHTTP/1.0\r\n");
-                writer.print("Connection: close\r\n\r\n");
-                writer.flush();
+            // Segun el codigo, algunos servidores mandan el contenido por el stream normal
+            // y otros por el error stream.
+            InputStream stream;
+            if (codigoFinal >= 400) {
+                stream = conexion.getErrorStream();
+            } else {
+                stream = conexion.getInputStream();
+            }
 
-                String linea;
-                boolean esPrimeraLinea = true;
-                boolean esCuerpo = false;
+            StringBuilder cuerpo = new StringBuilder();
 
-                // este while se encarga de leer la respuesta del servidor línea por línea y agregarla al StringBuilder
-                while ((linea = reader.readLine()) != null){
-                    // Recibir y almacenar la respuesta: código de estado
-                    if (esPrimeraLinea) {
-                        if(linea.contains(" ")) {
-                            codigoEstado = linea.substring(linea.indexOf(" ") + 1);
-                        }
-                        esPrimeraLinea = false;
-                        continue;
-                    }
+            // Si el stream existe, leemos el contenido linea por linea.
+            if (stream != null) {
+                try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(stream, StandardCharsets.UTF_8))) {
 
-                    // Separador de headers y cuerpo
-                    if (linea.isEmpty() && !esCuerpo) {
-                        esCuerpo = true;
-                        continue;
-                    }
+                    String linea;
 
-                    // Almacenamos el cuerpo HTML
-                    if (esCuerpo) {
+                    while ((linea = reader.readLine()) != null) {
                         cuerpo.append(linea).append("\n");
                     }
                 }
             }
-            socket.close();
+
+            // Si no llego HTML visible, fabricamos una pagina minima.
+            if (cuerpo.length() == 0) {
+                cuerpo.append("<html><body><h1>La pagina no devolvio HTML visible.</h1></body></html>");
+            }
+
+            return new RespuestaHttp(
+                codigoEstado,
+                cuerpo.toString(),
+                conexion.getURL().toString(),
+                false
+            );
         } catch (java.net.SocketTimeoutException e) {
-            codigoEstado = "408 Timeout";
-            cuerpo.append("<html><body>Limite de tiempo excedido (10s)</body></html>");
+            return new RespuestaHttp(
+                "408 Timeout",
+                "<html><body><h1>Limite de tiempo excedido (10s)</h1><p>El sitio no respondio a tiempo.</p></body></html>",
+                urlTexto,
+                true
+            );
+        } catch (javax.net.ssl.SSLException e) {
+            return new RespuestaHttp(
+                "Error SSL",
+                "<html><body><h1>No se pudo establecer una conexion segura HTTPS.</h1><p>" + escaparHtml(e.getMessage()) + "</p></body></html>",
+                urlTexto,
+                true
+            );
+        } catch (IllegalArgumentException e) {
+            return new RespuestaHttp(
+                "URL invalida",
+                "<html><body><h1>La URL ingresada no es valida.</h1></body></html>",
+                urlTexto,
+                false
+            );
         } catch (IOException e) {
-            // para poder ver el error en la consola
-            e.printStackTrace();
-            codigoEstado = "Error de Red";
+            return new RespuestaHttp(
+                "Error de Red",
+                "<html><body><h1>No se pudo cargar la pagina.</h1><p>" + escaparHtml(e.getMessage()) + "</p></body></html>",
+                urlTexto,
+                true
+            );
+        } finally {
+            // Si la conexion se abrio, aqui la cerramos.
+            if (conexion != null) {
+                conexion.disconnect();
+            }
+        }
+    }
+
+    private static URL construirURLValida(String textoURL) throws IOException {
+
+        String urlLimpia = textoURL.trim();
+
+        // Si la direccion no tiene ruta despues del dominio, agregamos /.
+        int indiceProtocolo = urlLimpia.indexOf("://");
+        int indicePrimerSlash = urlLimpia.indexOf("/", indiceProtocolo + 3);
+        if (indicePrimerSlash == -1) {
+            urlLimpia = urlLimpia + "/";
         }
 
-        // retornamos la respuesta del servidor: [0] es el estado, [1] es el HTML convertido a String
-        resultado[0] = codigoEstado;
-        resultado[1] = cuerpo.toString();
-        return resultado;
+        URL urlBase = new URL(urlLimpia);
+        String protocolo = urlBase.getProtocol();
+        String host = urlBase.getHost();
+        String archivo = urlBase.getFile();
+
+        if (archivo == null || archivo.isEmpty()) {
+            archivo = "/";
+        }
+
+        // Si el usuario no escribio puerto, ponemos 80 para http y 443 para https.
+        int puerto = urlBase.getPort();
+        if (puerto == -1) {
+            if (protocolo.equalsIgnoreCase("http")) {
+                puerto = 80;
+            } else if (protocolo.equalsIgnoreCase("https")) {
+                puerto = 443;
+            }
+        }
+
+        return new URL(protocolo, host, puerto, archivo);
     }
+
+    private static String descripcionEstado(int statusCode) {
+        // Este switch traduce algunos codigos HTTP comunes.
+        switch (statusCode) {
+            case 200: return "OK";
+            case 201: return "Created";
+            case 202: return "Accepted";
+            case 204: return "No Content";
+            case 301: return "Moved Permanently";
+            case 302: return "Found";
+            case 303: return "See Other";
+            case 307: return "Temporary Redirect";
+            case 308: return "Permanent Redirect";
+            case 400: return "Bad Request";
+            case 401: return "Unauthorized";
+            case 403: return "Forbidden";
+            case 404: return "Not Found";
+            case 500: return "Internal Server Error";
+            case 502: return "Bad Gateway";
+            case 503: return "Service Unavailable";
+            default: return "HTTP";
+        }
+    }
+
+    private static String escaparHtml(String texto) {
+        // Esto evita que un mensaje de error rompa el HTML del renderizador.
+        if (texto == null || texto.isBlank()) {
+            return "Sin detalle adicional.";
+        }
+        return texto
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;");
+    }
+    
 }
