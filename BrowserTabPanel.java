@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -73,6 +74,25 @@ public class BrowserTabPanel extends JPanel {
         btnAtras.addActionListener(e -> irAtras());
         btnAdelante.addActionListener(e -> irAdelante());
 
+        JButton btnHistorial = new JButton("◔");
+        btnHistorial.setFont(new Font("Arial", Font.PLAIN, 16));
+        btnHistorial.setPreferredSize(new Dimension(45, 35));
+        btnHistorial.setFocusPainted(false);
+        btnHistorial.setBorderPainted(false);
+        btnHistorial.setBackground(new Color(230, 230, 230));
+        btnHistorial.setForeground(new Color(60, 60, 60));
+
+        btnHistorial.addActionListener(e -> mostrarHistorial(btnHistorial));
+        
+        JButton btnRecargar = new JButton("↺");
+        btnRecargar.setFont(new Font("Arial", Font.BOLD, 18));
+        btnRecargar.setPreferredSize(new Dimension(45, 35));
+        btnRecargar.setFocusPainted(false);
+        btnRecargar.setBorderPainted(false);
+        btnRecargar.setBackground(new Color(230, 230, 230));
+        btnRecargar.setForeground(new Color(60, 60, 60));
+        btnRecargar.addActionListener(e -> recargarPagina());
+        
         localBuscador = new JTextField(25);
         localBuscador.setBackground(Color.WHITE);
         localBuscador.setForeground(new Color(60, 60, 60));
@@ -90,7 +110,9 @@ public class BrowserTabPanel extends JPanel {
         localBoton.setBackground(new Color(180, 180, 180));
         localBoton.setForeground(Color.WHITE);
         localBoton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        
 
+        
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.insets = new Insets(0, 0, 0, 5);
@@ -100,17 +122,24 @@ public class BrowserTabPanel extends JPanel {
         panelTop.add(btnAdelante, gbc);
 
         gbc.gridx = 2;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(0, 5, 0, 5);
-        panelTop.add(localBuscador, gbc);
+        panelTop.add(btnRecargar, gbc);
 
         gbc.gridx = 3;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
-        gbc.insets = new Insets(0, 0, 0, 0);
-        panelTop.add(localBoton, gbc);
+        gbc.insets = new Insets(0, 0, 0, 5);
+        panelTop.add(btnHistorial, gbc);
 
+        gbc.gridx = 4;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panelTop.add(localBuscador, gbc);
+
+        gbc.gridx = 5; 
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
+        panelTop.add(localBoton, gbc);
+        
         return panelTop;
     }
 
@@ -153,6 +182,13 @@ public class BrowserTabPanel extends JPanel {
     }
 
 //-----
+
+    private void recargarPagina() {
+        if (!urlActual.isEmpty()) {
+            procesarURLweb(urlActual, renderizador);
+        }
+    }
+
     private void setupListeners() {
         // Si se presiona el boton Ir y el campo no esta vacio, cargamos la URL.
         localBoton.addActionListener(e -> {
@@ -258,11 +294,13 @@ public class BrowserTabPanel extends JPanel {
                     renderizador.cargarURL(respuestaFinal.cuerpoHtml, respuestaFinal.urlFinal);
                     localBuscador.setText(respuestaFinal.urlFinal);
                     historial.visitar(respuestaFinal.urlFinal);
+                    urlActual = respuestaFinal.urlFinal;
                     mainFrame.etiquetaEstado.setText(respuestaFinal.codigoEstado);
                     mainFrame.etiquetaEstado.setForeground(new Color(46, 204, 113));
                 });
             } catch (Exception e) {
                 SwingUtilities.invokeLater(() -> {
+                    urlActual = urlFinal;
                     mainFrame.etiquetaEstado.setText("Error");
                     mainFrame.etiquetaEstado.setForeground(Color.RED);
                     JOptionPane.showMessageDialog(mainFrame, "Error al cargar la pagina: " + e.getMessage());
@@ -270,7 +308,32 @@ public class BrowserTabPanel extends JPanel {
             }
         }).start();
     }
+    
+private void mostrarHistorial(JButton btnHistorial) {
+    JPopupMenu menu = new JPopupMenu("Historial");
+    LinkedList<String> urls = historial.getHistorial();
 
+    if (urls.isEmpty()) {
+        JMenuItem vacio = new JMenuItem("No se han visitado paginas");
+        vacio.setEnabled(false);
+        menu.add(vacio);
+    } else {
+        for (int i = urls.size() - 1; i >= 0; i--) {
+            String url = urls.get(i);
+            String etiqueta = url.length() > 60 ? url.substring(0, 57) + "..." : url;
+            JMenuItem item = new JMenuItem(etiqueta);
+            item.setToolTipText(url);
+
+            item.addActionListener(e -> {
+                localBuscador.setText(url);
+                procesarURLweb(url, renderizador);
+            });
+            menu.add(item);
+        }
+    }
+
+    menu.show(btnHistorial, 0, btnHistorial.getHeight());
+}
     public void aplicarTemaVisual(Color fondo, Color texto) {
         if (renderizador != null) {
             renderizador.aplicarTemaVisual(fondo, texto);
