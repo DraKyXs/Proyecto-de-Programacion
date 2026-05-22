@@ -165,4 +165,24 @@ public class Renderizador extends JPanel {
             doc.setCharacterAttributes(inicio, longitud, atributos, false);
         }
     }
+    public void cleanup() {
+        try {
+            if (areaContenido != null) {
+                // Remover listener de hyperlinks
+                for (HyperlinkListener listener : areaContenido.getHyperlinkListeners()) {
+                    areaContenido.removeHyperlinkListener(listener);
+                }
+                
+                areaContenido.setText(""); // liberar contenido HTML
+                areaContenido.setDocument(null);
+            }
+
+            htmlEditorKit = null;
+            listener = null;
+
+            removeAll(); // limpiar subcomponentes (scrollpane, etc.)
+        } catch (Exception e) {
+            System.err.println("Error durante cleanup de Renderizador: " + e.getMessage());
+        }
+    }
 }

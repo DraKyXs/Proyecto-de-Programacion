@@ -1,4 +1,6 @@
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +39,9 @@ public class BrowserTabPanel extends JPanel {
 
     // Historial simple de URLs visitadas.
     private Historial historial = new Historial();
+
+    // Para poder remover el DocumentListener correctamente al cerrar la pestaña
+    private DocumentListener documentListener;
 
     public BrowserTabPanel(main mainFrame) {
         this.mainFrame = mainFrame;
@@ -205,7 +210,7 @@ public class BrowserTabPanel extends JPanel {
         });
 
         // Este listener detecta si el texto cambia para actualizar el aspecto del boton.
-        localBuscador.getDocument().addDocumentListener(new DocumentListener() {
+        documentListener = new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 actualizarBotonLocal();
@@ -220,7 +225,7 @@ public class BrowserTabPanel extends JPanel {
             public void changedUpdate(DocumentEvent e) {
                 actualizarBotonLocal();
             }
-        });
+        };
 
         // Efecto hover del boton Ir.
         localBoton.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -536,6 +541,74 @@ private void mostrarHistorial(JButton btnHistorial) {
             .replace("&", "&amp;")
             .replace("<", "&lt;")
             .replace(">", "&gt;");
+    }
+    /**
+     * Libera recursos cuando se cierra la pestaña
+     */
+    public void cleanup() {
+        try {
+            // Detener listener de navegacion
+            if (renderizador != null) {
+                renderizador.setNavegacionListener(null);
+                renderizador.cleanup();
+            }
+
+            // Remover listeners de componentes
+            if (localBuscador != null) {
+                // Remover DocumentListener
+                if (documentListener != null && localBuscador.getDocument() != null) {
+                    localBuscador.getDocument().removeDocumentListener(documentListener);
+                }
+
+                // Remover ActionListeners
+                ActionListener[] actionListeners = localBuscador.getActionListeners();
+                for (ActionListener l : actionListeners) {
+                    localBuscador.removeActionListener(l);
+                }
+            }
+
+            if (localBoton != null) {
+                ActionListener[] actionListenersBoton = localBoton.getActionListeners();
+                for (ActionListener l : actionListenersBoton) {
+                    localBoton.removeActionListener(l);
+                }
+
+                MouseListener[] mouseListeners = localBoton.getMouseListeners();
+                for (MouseListener l : mouseListeners) {
+                    localBoton.removeMouseListener(l);
+                }
+            }
+
+            // Limpiar botones de navegacion
+            if (btnAtras != null) {
+                ActionListener[] atrasListeners = btnAtras.getActionListeners();
+                for (ActionListener l : atrasListeners) {
+                    btnAtras.removeActionListener(l);
+                }
+            }
+
+            if (btnAdelante != null) {
+                ActionListener[] adelanteListeners = btnAdelante.getActionListeners();
+                for (ActionListener l : adelanteListeners) {
+                    btnAdelante.removeActionListener(l);
+                }
+            }
+
+            // Limpiar panel
+            removeAll();
+
+            // Ayudar al Garbage Collector
+            renderizador = null;
+            localBuscador = null;
+            localBoton = null;
+            btnAtras = null;
+            btnAdelante = null;
+            historial = null;
+            documentListener = null;
+
+        } catch (Exception e) {
+            System.err.println("Error durante cleanup de BrowserTabPanel: " + e.getMessage());
+        }
     }
     
 }

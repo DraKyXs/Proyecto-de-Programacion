@@ -22,6 +22,10 @@ public class CustomTabHeader extends JPanel {
                 int indiceUltimaReal = sistemaPestanas.getTabCount() - 2; // la última pestaña de contenido real
 
                 if (miIndice != -1 && miIndice < indiceUltimaReal) {
+                    Component componente = sistemaPestanas.getComponentAt(miIndice);
+                    if (componente instanceof BrowserTabPanel) {
+                        ((BrowserTabPanel) componente).cleanup();
+                    }
                     sistemaPestanas.remove(miIndice);
                 } else {
                     System.out.println("Acción bloqueada: no se puede cerrar la última pestaña de contenido.");
