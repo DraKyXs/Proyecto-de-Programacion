@@ -59,7 +59,7 @@ public class main extends JFrame {
         
         abrirNuevaPestana();
     }
-
+    
     private void initializeFrame() {
         setUndecorated(true);
         setSize(1000, 700); 

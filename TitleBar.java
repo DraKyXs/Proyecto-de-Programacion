@@ -14,7 +14,9 @@ public class TitleBar extends JPanel {
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         buttonsPanel.setOpaque(false);
 
-        JButton btnTema = CreadorBotones("⚙", colorBarra);
+        JButton btnTema = CreadorBotones("⚘", colorBarra);
+        btnTema.setFont(new Font("Arial Unicode MS", Font.BOLD, 18));
+        btnTema.setToolTipText("Temas");
         JButton btnmin = CreadorBotones("−", colorBarra);
         JButton btnmax = CreadorBotones("□", colorBarra);
         JButton btncerrar = CreadorBotones("×", colorBarra);
@@ -85,6 +87,7 @@ public class TitleBar extends JPanel {
         btn.setPreferredSize(new Dimension(45, 40));
         return btn;
     }
+
 
     private void aplicarEfectoHover(JButton boton, Color hoverBg, Color hoverFg) {
         Color bgColorOriginal = boton.getBackground();

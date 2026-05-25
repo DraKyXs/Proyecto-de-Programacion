@@ -86,23 +86,10 @@ public class BrowserTabPanel extends JPanel {
         btnAtras.addActionListener(e -> irAtras());
         btnAdelante.addActionListener(e -> irAdelante());
 
-        JButton btnHistorial = new JButton("◔");
-        btnHistorial.setFont(new Font("Arial", Font.PLAIN, 16));
-        btnHistorial.setPreferredSize(new Dimension(45, 35));
-        btnHistorial.setFocusPainted(false);
-        btnHistorial.setBorderPainted(false);
-        btnHistorial.setBackground(new Color(230, 230, 230));
-        btnHistorial.setForeground(new Color(60, 60, 60));
-
+        JButton btnHistorial = crearBotonTexto("⌛", "Historial");
         btnHistorial.addActionListener(e -> mostrarHistorial(btnHistorial));
         
-        JButton btnRecargar = new JButton("↺");
-        btnRecargar.setFont(new Font("Arial", Font.BOLD, 18));
-        btnRecargar.setPreferredSize(new Dimension(45, 35));
-        btnRecargar.setFocusPainted(false);
-        btnRecargar.setBorderPainted(false);
-        btnRecargar.setBackground(new Color(230, 230, 230));
-        btnRecargar.setForeground(new Color(60, 60, 60));
+        JButton btnRecargar = crearBotonTexto("r", "Recargar");
         btnRecargar.addActionListener(e -> recargarPagina());
         
         localBuscador = new JTextField(25);
@@ -164,6 +151,19 @@ public class BrowserTabPanel extends JPanel {
         btn.setBorderPainted(false);
         btn.setBackground(new Color(230, 230, 230));
         btn.setForeground(new Color(60, 60, 60));
+        return btn;
+    }
+
+    private JButton crearBotonTexto(String texto, String tooltip) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Dialog", Font.BOLD, 20));
+        btn.setPreferredSize(new Dimension(45, 35));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setBackground(new Color(230, 230, 230));
+        btn.setForeground(new Color(60, 60, 60));
+        btn.setToolTipText(tooltip);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return btn;
     }
 
