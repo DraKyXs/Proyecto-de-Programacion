@@ -72,7 +72,7 @@ public class main extends JFrame {
     // LÓGICA DE PESTAÑAS Y HEADER
     // ==================================================================================================================================================
     public void abrirNuevaPestana() {
-        JPanel panelContenido = new BrowserTabPanel(this);
+        BrowserTabPanel panelContenido = new BrowserTabPanel(this);
 
         //Barra de estado local para cada pestañaaaaaa
         panelContenido.add(new StatusBar(this), BorderLayout.SOUTH);
@@ -85,9 +85,9 @@ public class main extends JFrame {
         sistemaPestanas.insertTab(null, null, panelContenido, null, posicion);
         CustomTabHeader tabHeader = new CustomTabHeader(titulo, panelContenido, sistemaPestanas);
         sistemaPestanas.setTabComponentAt(posicion, tabHeader);
-        if (panelContenido instanceof BrowserTabPanel) {
-            ((BrowserTabPanel) panelContenido).setTabHeader(tabHeader);
-        }
+        
+        panelContenido.setTabHeader(tabHeader);
+        
         
         sistemaPestanas.setSelectedIndex(posicion);
     }
