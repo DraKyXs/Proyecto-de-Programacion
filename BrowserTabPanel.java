@@ -1,13 +1,12 @@
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.LinkedList;
 import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
@@ -445,29 +444,44 @@ private void mostrarHistorial(JButton btnHistorial) {
                 stream = conexion.getInputStream();
             }
 
-            StringBuilder cuerpo = new StringBuilder();
+            String cuerpo = "";
 
-            // Si el stream existe, leemos el contenido linea por linea.
+            // Si el stream existe, primero leemos los bytes tal como vienen.
+            // Todavia no los convertimos a texto porque primero queremos saber
+            // con que charset dice la pagina que fueron escritos.
             if (stream != null) {
-                try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+                try (InputStream streamLectura = stream;
+                     ByteArrayOutputStream buffer = new ByteArrayOutputStream()) {
 
-                    String linea;
+                    byte[] bloque = new byte[4096];
+                    int cantidadLeida;
 
-                    while ((linea = reader.readLine()) != null) {
-                        cuerpo.append(linea).append("\n");
+                    // Este while copia todos los bytes del stream a memoria.
+                    while ((cantidadLeida = streamLectura.read(bloque)) != -1) {
+                        buffer.write(bloque, 0, cantidadLeida);
                     }
+
+                    // Buscamos el charset que viene en el header Content-Type.
+                    String charsetNombre = obtenerCharsetDeRespuesta(conexion);
+
+                    // Si no viene ningun charset, usamos UTF-8 como valor por defecto.
+                    if (charsetNombre == null || charsetNombre.isBlank()) {
+                        charsetNombre = "UTF-8";
+                    }
+
+                    // Convertimos los bytes a texto usando el charset encontrado.
+                    cuerpo = new String(buffer.toByteArray(), Charset.forName(charsetNombre));
                 }
             }
 
             // Si no llego HTML visible, fabricamos una pagina minima.
-            if (cuerpo.length() == 0) {
-                cuerpo.append("<html><body><h1>La pagina no devolvio HTML visible.</h1></body></html>");
+            if (cuerpo.isEmpty()) {
+                cuerpo = "<html><body><h1>La pagina no devolvio HTML visible.</h1></body></html>";
             }
 
             return new RespuestaHttp(
                 codigoEstado,
-                cuerpo.toString(),
+                cuerpo,
                 conexion.getURL().toString(),
                 false
             );
@@ -538,6 +552,29 @@ private void mostrarHistorial(JButton btnHistorial) {
         }
 
         return new URL(protocolo, host, puerto, archivo);
+    }
+
+    private static String obtenerCharsetDeRespuesta(HttpURLConnection conexion) {
+        // Aqui intentamos leer el charset desde el header Content-Type.
+        String contentType = conexion.getContentType();
+
+        // Si no vino Content-Type, no podemos sacar el charset desde ahi.
+        if (contentType == null || contentType.isBlank()) {
+            return null;
+        }
+
+        String[] partes = contentType.split(";");
+
+        // Recorremos cada parte del header buscando la palabra charset.
+        for (String parte : partes) {
+            String texto = parte.trim();
+
+            if (texto.toLowerCase().startsWith("charset=")) {
+                return texto.substring("charset=".length()).trim();
+            }
+        }
+
+        return null;
     }
 
     private static String descripcionEstado(int statusCode) {

@@ -72,6 +72,11 @@ public class Renderizador extends JPanel {
             // Forzamos carga sincrona para que el documento termine de parsearse
             // antes de asignarlo definitivamente al JTextPane.
             documento.setAsynchronousLoadPriority(-1);
+
+            // Le decimos a Swing que no vuelva a cambiar el charset segun el HTML.
+            // Esto sirve porque la pagina ya fue leida antes con el charset correcto.
+            documento.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
+
             documento.setBase(new URL(baseUrl));
             htmlEditorKit.read(new StringReader(htmlSeguro), documento, 0);
             areaContenido.setDocument(documento);
