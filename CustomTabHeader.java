@@ -3,12 +3,13 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class CustomTabHeader extends JPanel {
+    private final JLabel lblTitulo;
 
     public CustomTabHeader(String titulo, JPanel panelContenido, JTabbedPane sistemaPestanas) {
         setOpaque(false);
         setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
         
-        JLabel lblTitulo = new JLabel(titulo);
+        lblTitulo = new JLabel(titulo);
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 8)); 
         
         JLabel btnCerrar = new JLabel(" × ");
@@ -34,5 +35,9 @@ public class CustomTabHeader extends JPanel {
         });
         add(lblTitulo);
         add(btnCerrar);
+    }
+
+    public void setTitulo(String titulo) {
+        lblTitulo.setText(titulo);
     }
 }

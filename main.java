@@ -83,7 +83,11 @@ public class main extends JFrame {
         if(posicion < 0) posicion = 0;
 
         sistemaPestanas.insertTab(null, null, panelContenido, null, posicion);
-        sistemaPestanas.setTabComponentAt(posicion, new CustomTabHeader(titulo, panelContenido, sistemaPestanas));
+        CustomTabHeader tabHeader = new CustomTabHeader(titulo, panelContenido, sistemaPestanas);
+        sistemaPestanas.setTabComponentAt(posicion, tabHeader);
+        if (panelContenido instanceof BrowserTabPanel) {
+            ((BrowserTabPanel) panelContenido).setTabHeader(tabHeader);
+        }
         
         sistemaPestanas.setSelectedIndex(posicion);
     }

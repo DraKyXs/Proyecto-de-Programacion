@@ -43,6 +43,9 @@ public class BrowserTabPanel extends JPanel {
     // Para poder remover el DocumentListener correctamente al cerrar la pestaña
     private DocumentListener documentListener;
 
+    // Guardamos el encabezado de la pesta?a para poder cambiar su titulo.
+    private CustomTabHeader tabHeader;
+
     public BrowserTabPanel(main mainFrame) {
         this.mainFrame = mainFrame;
         setLayout(new BorderLayout());
@@ -63,6 +66,11 @@ public class BrowserTabPanel extends JPanel {
         add(renderizador, BorderLayout.CENTER);
         setupListeners();
         actualizarBotones();
+    }
+
+    // Esta funcion recibe el encabezado que se crea en la ventana principal.
+    public void setTabHeader(CustomTabHeader tabHeader) {
+        this.tabHeader = tabHeader;
     }
 
     private JPanel createSearchPanel() {
@@ -300,6 +308,7 @@ public class BrowserTabPanel extends JPanel {
                     localBuscador.setText(respuestaFinal.urlFinal);
                     historial.visitar(respuestaFinal.urlFinal);
                     urlActual = respuestaFinal.urlFinal;
+                    actualizarTituloPestana(respuestaFinal.urlFinal);
                     mainFrame.etiquetaEstado.setText(respuestaFinal.codigoEstado);
                     mainFrame.etiquetaEstado.setForeground(new Color(46, 204, 113));
                 });
@@ -314,6 +323,28 @@ public class BrowserTabPanel extends JPanel {
         }).start();
     }
     
+    // Esta funcion toma la URL final y usa su dominio como titulo de la pesta?a.
+    private void actualizarTituloPestana(String urlTexto) {
+        // Si no hay encabezado, no hacemos nada.
+        if (tabHeader == null) {
+            return;
+        }
+        try {
+            URL url = new URL(urlTexto);
+            String dominio = url.getHost();
+            // Quitamos el prefijo www. para que el titulo quede mas corto.
+            if (dominio.startsWith("www.")) {
+                dominio = dominio.substring(4);
+            }
+            // Si el dominio esta vacio, usamos la URL completa.
+            if (dominio.isEmpty()) {
+                dominio = urlTexto;
+            }
+            tabHeader.setTitulo(dominio);
+        } catch (Exception e) {
+            // Si la URL no se puede leer bien, dejamos el titulo actual.
+        }
+    }
 private void mostrarHistorial(JButton btnHistorial) {
     JPopupMenu menu = new JPopupMenu("Historial");
     LinkedList<String> urls = historial.getHistorial();
@@ -612,3 +643,6 @@ private void mostrarHistorial(JButton btnHistorial) {
     }
     
 }
+
+
+
