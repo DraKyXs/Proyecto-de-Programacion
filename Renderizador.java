@@ -25,8 +25,6 @@ public class Renderizador extends JPanel {
         areaContenido.setEditable(false);
         areaContenido.setContentType("text/html");
 
-        // Usamos un HTMLEditorKit nativo de Java para que el JTextPane
-        // pueda interpretar HTML basico en vez de tratarlo como texto plano.
         htmlEditorKit = new HTMLEditorKit();
         areaContenido.setEditorKit(htmlEditorKit);
 
@@ -53,8 +51,6 @@ public class Renderizador extends JPanel {
     }
 
     public void cargarURL(String contenidoURL, String baseUrl) {
-        // Si no hay contenido, mostramos una pagina minima de error
-        // para que el area no quede en blanco.
         if (contenidoURL == null || contenidoURL.isBlank()) {
             areaContenido.setText("<html><body><h1>Error al cargar la pagina</h1></body></html>");
             areaContenido.setCaretPosition(0);
@@ -63,25 +59,18 @@ public class Renderizador extends JPanel {
 
         areaContenido.setContentType("text/html");
 
-        // Antes de entregar el HTML al parser de Swing, lo limpiamos un poco
-        // para quitar partes modernas que suelen romper al renderizador nativo de Java.
         String htmlSeguro = sanitizarHtmlParaSwing(contenidoURL);
 
         HTMLDocument documento = (HTMLDocument) htmlEditorKit.createDefaultDocument();
         try {
-            // Forzamos carga sincrona para que el documento termine de parsearse
-            // antes de asignarlo definitivamente al JTextPane.
             documento.setAsynchronousLoadPriority(-1);
 
-            // Le decimos a Swing que no vuelva a cambiar el charset segun el HTML.
-            // Esto sirve porque la pagina ya fue leida antes con el charset correcto.
             documento.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
 
             documento.setBase(new URL(baseUrl));
             htmlEditorKit.read(new StringReader(htmlSeguro), documento, 0);
             areaContenido.setDocument(documento);
         } catch (IOException | BadLocationException | RuntimeException e) {
-            // Si incluso asi Swing no puede parsear el documento, mostramos un fallback seguro con el HTML escapado.
             areaContenido.setText(construirHtmlFallback(htmlSeguro));
         }
 
@@ -89,11 +78,8 @@ public class Renderizador extends JPanel {
     }
 
     private String sanitizarHtmlParaSwing(String html) {
-        // Aqui limpiamos scripts, estilos y otras partes modernas que suelen hacer fallar
-        // al parser HTML/CSS antiguo de Swing
         String htmlSeguro = html;
 
-        // Si una imagen viene dentro de un enlace, la convertimos en una imagen plana
         htmlSeguro = htmlSeguro.replaceAll("(?is)<a\\b[^>]*>\\s*(<img\\b[^>]*>)\\s*</a>", "$1");
 
         htmlSeguro = htmlSeguro.replaceAll("(?is)<script[^>]*>.*?</script>", "");
@@ -120,8 +106,6 @@ public class Renderizador extends JPanel {
 
     private void manejarEventosEnlace(HyperlinkEvent e) {
         if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-            // Solo navegamos si el enlace no corresponde a una imagen enlazada.
-            // Las imagenes deben comportarse como imagenes planas, no como botones.
             if (listener != null && !esImagenEnlazada(e.getSourceElement())) {
                 String destino = e.getURL() != null ? e.getURL().toString() : e.getDescription();
                 listener.navegar(destino);
@@ -140,8 +124,6 @@ public class Renderizador extends JPanel {
     }
 
     private boolean esImagenEnlazada(Element elementoHtml) {
-        // Este metodo revisa si el elemento del evento corresponde a una imagen
-        // o contiene una imagen en alguno de sus hijos.
         if (elementoHtml == null) {
             return false;
         }
@@ -173,19 +155,21 @@ public class Renderizador extends JPanel {
     public void cleanup() {
         try {
             if (areaContenido != null) {
-                // Remover listener de hyperlinks
                 for (HyperlinkListener listener : areaContenido.getHyperlinkListeners()) {
                     areaContenido.removeHyperlinkListener(listener);
                 }
                 
-                areaContenido.setText(""); // liberar contenido HTML
-                areaContenido.setDocument(null);
+                areaContenido.setText("");
+
+                if (htmlEditorKit != null) {
+                    areaContenido.setDocument(htmlEditorKit.createDefaultDocument());
+                }
             }
 
             htmlEditorKit = null;
             listener = null;
 
-            removeAll(); // limpiar subcomponentes (scrollpane, etc.)
+            removeAll();
         } catch (Exception e) {
             System.err.println("Error durante cleanup de Renderizador: " + e.getMessage());
         }

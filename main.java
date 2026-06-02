@@ -9,14 +9,13 @@ public class main extends JFrame {
     
     private int contadorPestanas = 1;
     
-    // Variables globales para guardar el tema elegido
     private Color fondoActual = Color.WHITE;
     private Color textoActual = Color.BLACK;
 
     public main() {
         initializeFrame();
         
-        add(new TitleBar(this), BorderLayout.NORTH);
+        add(new BarraTitulo(this), BorderLayout.NORTH);
         
         sistemaPestanas = new JTabbedPane();
         sistemaPestanas.setBackground(new Color(235, 235, 235));
@@ -68,14 +67,12 @@ public class main extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    // ==================================================================================================================================================
     // LÓGICA DE PESTAÑAS Y HEADER
-    // ==================================================================================================================================================
     public void abrirNuevaPestana() {
-        BrowserTabPanel panelContenido = new BrowserTabPanel(this);
+        PanelNavegador panelContenido = new PanelNavegador(this);
 
         //Barra de estado local para cada pestañaaaaaa
-        panelContenido.add(new StatusBar(this), BorderLayout.SOUTH);
+        panelContenido.add(new BarraEstado(this), BorderLayout.SOUTH);
         
         String titulo = "Buscador "+contadorPestanas++;
         
@@ -83,10 +80,10 @@ public class main extends JFrame {
         if(posicion < 0) posicion = 0;
 
         sistemaPestanas.insertTab(null, null, panelContenido, null, posicion);
-        CustomTabHeader tabHeader = new CustomTabHeader(titulo, panelContenido, sistemaPestanas);
+        EncabezadoPestana tabHeader = new EncabezadoPestana(titulo, panelContenido, sistemaPestanas);
         sistemaPestanas.setTabComponentAt(posicion, tabHeader);
         
-        panelContenido.setTabHeader(tabHeader);
+        panelContenido.setEncabezadoPestana(tabHeader);
         
         
         sistemaPestanas.setSelectedIndex(posicion);
