@@ -20,6 +20,8 @@ public class BarraTitulo extends JPanel {
         JButton btnMin = crearBoton("-", colorBarra);
         JButton btnMax = crearBoton("□", colorBarra);
         JButton btnCerrar = crearBoton("x", colorBarra);
+        jButton favoritos = crearBoton("★", colorBarra);
+        favoritos.setFont(new Font("Arial Unicode MS", Font.BOLD, 18));
 
         aplicarEfectoHover(btnTema, new Color(200, 200, 200), new Color(80, 80, 80));
         aplicarEfectoHover(btnMin, new Color(200, 200, 200), new Color(80, 80, 80));
@@ -43,11 +45,13 @@ public class BarraTitulo extends JPanel {
         btnMin.addActionListener(e -> mainFrame.setState(JFrame.ICONIFIED));
         btnMax.addActionListener(e -> alternarMaximizado(mainFrame));
         btnCerrar.addActionListener(e -> System.exit(0));
+        
 
         buttonsPanel.add(btnTema);
         buttonsPanel.add(btnMin);
         buttonsPanel.add(btnMax);
         buttonsPanel.add(btnCerrar);
+        buttonsPanel.add(favoritos);
 
         add(buttonsPanel, BorderLayout.EAST);
     }

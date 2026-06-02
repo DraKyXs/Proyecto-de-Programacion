@@ -12,6 +12,7 @@ public class BarraNavegacion extends JPanel {
     private JButton botonAdelante;
     private JButton botonRecargar;
     private JButton botonHistorial;
+    private JButton botonFavoritos;
     private DocumentListener documentListener;
 
     public BarraNavegacion() {
@@ -28,6 +29,7 @@ public class BarraNavegacion extends JPanel {
         botonAdelante = crearBotonNav(">");
         botonRecargar = crearBotonTexto("r", "Recargar");
         botonHistorial = crearBotonTexto("⌛", "Historial");
+        botonFavoritos = crearBotonTexto("★", "Favoritos");
 
         campoUrl = new JTextField(25);
         campoUrl.setBackground(Color.WHITE);
@@ -76,6 +78,9 @@ public class BarraNavegacion extends JPanel {
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
         add(botonIr, gbc);
+
+        gbc.gridx = 6;
+        add(botonFavoritos, gbc);
     }
 
     private void configurarBuscador() {
