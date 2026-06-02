@@ -5,7 +5,7 @@ class  ResourceHolder {
     } 
 } 
 
-public  class  FinalizeExample { 
+public  class  FinalizeExample_ejemplo_ { 
     public  static  void  main (String[] args) { 
         new  ResourceHolder (); 
         System.gc(); // Solicitar recolección de basura
