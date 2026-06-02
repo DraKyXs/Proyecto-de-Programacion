@@ -13,6 +13,8 @@ public class Renderizador extends JPanel {
     private JTextPane areaContenido;
     private HTMLEditorKit htmlEditorKit;
     private NavegacionListener listener;
+    private String mensaje_no_render = "<p style ='display:inline;color:red; font-weight:bold;'>Este elemento no se puede renderizar</p>";
+
 
     public interface NavegacionListener {
         void navegar(String urlDestino);
@@ -35,10 +37,13 @@ public class Renderizador extends JPanel {
         areaContenido.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         areaContenido.addHyperlinkListener(this::manejarEventosEnlace);
-
+        
+        
+        
         JScrollPane scroll = new JScrollPane(areaContenido);
         scroll.setBorder(null);
         add(scroll, BorderLayout.CENTER);
+        
     }
 
     public void aplicarTemaVisual(Color fondo, Color texto) {
@@ -76,6 +81,7 @@ public class Renderizador extends JPanel {
 
         areaContenido.setCaretPosition(0);
     }
+
 
     private String sanitizarHtmlParaSwing(String html) {
         String htmlSeguro = html;
