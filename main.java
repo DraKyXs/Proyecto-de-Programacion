@@ -14,7 +14,7 @@ public class main extends JFrame {
 
     public main() {
         initializeFrame();
-        
+        System.out.println("dsdfddsbds");
         add(new BarraTitulo(this), BorderLayout.NORTH);
         
         sistemaPestanas = new JTabbedPane();

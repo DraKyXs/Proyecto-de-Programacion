@@ -21,31 +21,35 @@ public class UtilidadesUrl {
         String urlLimpia = textoURL.trim();
 
         int indiceProtocolo = urlLimpia.indexOf("://");
+    if (indiceProtocolo != -1) {
         int indicePrimerSlash = urlLimpia.indexOf("/", indiceProtocolo + 3);
         if (indicePrimerSlash == -1) {
             urlLimpia = urlLimpia + "/";
         }
-
-        URL urlBase = new URL(urlLimpia);
-        String protocolo = urlBase.getProtocol();
-        String host = urlBase.getHost();
-        String archivo = urlBase.getFile();
-
-        if (archivo == null || archivo.isEmpty()) {
-            archivo = "/";
-        }
-
-        int puerto = urlBase.getPort();
-        if (puerto == -1) {
-            if (protocolo.equalsIgnoreCase("http")) {
-                puerto = 80;
-            } else if (protocolo.equalsIgnoreCase("https")) {
-                puerto = 443;
-            }
-        }
-
-        return new URL(protocolo, host, puerto, archivo);
     }
+
+    URL urlBase = new URL(urlLimpia);
+    String protocolo = urlBase.getProtocol();
+    String host = urlBase.getHost();
+    String archivo = urlBase.getFile();
+
+    if (archivo == null || archivo.isEmpty()) {
+        archivo = "/";
+    }
+
+    int puerto = urlBase.getPort();
+
+
+    if (puerto == -1) {
+        if (protocolo.equalsIgnoreCase("http")) {
+            puerto = 80;
+        } else if (protocolo.equalsIgnoreCase("https")) {
+            puerto = 443;
+        }
+    }   
+
+    return new URL(protocolo, host, puerto, archivo);
+}
 
     public static String obtenerDominio(String urlTexto) {
         try {

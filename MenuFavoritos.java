@@ -1,4 +1,4 @@
-import java.awt.*;
+/*import java.awt.*;
 public class MenuFavoritos {
     private JButton botonFavoritos;
 
@@ -26,5 +26,5 @@ public class MenuFavoritos {
         botonFavoritos = crearBotonTexto("★", "Favoritos");
         aplicarEfectoHover(botonFavoritos, new Color(255, 215, 0), new Color(80, 80, 80));
     } menu.fav.show(botonFavoritos, 0, botonFavoritos.getHeight());
-}
+}*/
 
