@@ -12,8 +12,9 @@ public class BarraNavegacion extends JPanel {
     private JButton botonAdelante;
     private JButton botonRecargar;
     private JButton botonHistorial;
-    private JButton botonFavoritos;
+   private JLabel botonFavoritos;
     private DocumentListener documentListener;
+    private boolean esFavorito = false;
 
     public BarraNavegacion() {
         setLayout(new GridBagLayout());
@@ -29,7 +30,9 @@ public class BarraNavegacion extends JPanel {
         botonAdelante = crearBotonNav(">");
         botonRecargar = crearBotonTexto("r", "Recargar");
         botonHistorial = crearBotonTexto("⌛", "Historial");
-        botonFavoritos = crearBotonTexto("★", "Favoritos");
+        botonFavoritos = new JLabel("☆");
+
+        
 
         campoUrl = new JTextField(25);
         campoUrl.setBackground(Color.WHITE);
@@ -48,6 +51,12 @@ public class BarraNavegacion extends JPanel {
         botonIr.setBackground(new Color(180, 180, 180));
         botonIr.setForeground(Color.WHITE);
         botonIr.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        botonFavoritos.setFont(new Font("Dialog", Font.PLAIN, 22));
+        botonFavoritos.setForeground(new Color(180, 150, 0));
+        botonFavoritos.setToolTipText("Agregar a favoritos");
+        botonFavoritos.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        botonFavoritos.setPreferredSize(new Dimension(45, 35));
+        botonFavoritos.setHorizontalAlignment(SwingConstants.CENTER);
     }
 
     private void ordenarComponentes() {
@@ -172,6 +181,10 @@ public class BarraNavegacion extends JPanel {
     public JButton getBotonHistorial() {
         return botonHistorial;
     }
+    
+    public JLabel getBotonFavoritos() {
+        return botonFavoritos;
+    }
 
     public void alBuscar(ActionListener listener) {
         botonIr.addActionListener(listener);
@@ -194,6 +207,31 @@ public class BarraNavegacion extends JPanel {
         botonHistorial.addActionListener(listener);
     }
 
+   public void alToggleFavorito(ActionListener listener) {
+        botonFavoritos.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    listener.actionPerformed(null);
+                }
+            }
+        });
+    }
+
+    public void actualizarEstrellaFavorito(boolean esFav) {
+        this.esFavorito = esFav;
+        if (esFav) {
+            botonFavoritos.setText("★");
+            botonFavoritos.setToolTipText("Quitar de favoritos");
+            botonFavoritos.setForeground(new Color(218, 165, 32));
+        } else {
+            botonFavoritos.setText("☆");
+            botonFavoritos.setToolTipText("Agregar a favoritos");
+            botonFavoritos.setForeground(new Color(180, 150, 0));
+        }
+        botonFavoritos.repaint();
+    }
+
     public void cleanup() {
         if (campoUrl != null && documentListener != null) {
             campoUrl.getDocument().removeDocumentListener(documentListener);
@@ -206,6 +244,9 @@ public class BarraNavegacion extends JPanel {
         limpiarActionListeners(botonRecargar);
         limpiarActionListeners(botonHistorial);
         limpiarMouseListeners(botonIr);
+        for (java.awt.event.MouseListener ml : botonFavoritos.getMouseListeners()) {
+            botonFavoritos.removeMouseListener(ml);
+        }
     }
 
     private void limpiarActionListeners(AbstractButton boton) {

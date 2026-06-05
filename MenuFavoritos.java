@@ -1,30 +1,105 @@
-/*import java.awt.*;
+import java.awt.*;
+import javax.swing.*;
+
 public class MenuFavoritos {
-    private JButton botonFavoritos;
 
     public interface AccionFavoritos {
         void abrirUrl(String url);
+        void eliminarUrl(String url);
     }
 
-    public MenuFavoritos() {
-        jPopupMenu menu.fav = new JPopupMenu("Favoritos");
+    public static void mostrar(JComponent boton, Favoritos favoritos, AccionFavoritos accion) {
+        // Buscar la ventana padre
+        Window ventanaPadre = SwingUtilities.getWindowAncestor(boton);
 
-        if (favoritos.getFavoritos().isEmpty()) {
-            JMenuItem vacio = new JMenuItem("No se han agregado favoritos");
-            vacio.setEnabled(false);
-            jpopupMenu.add(vacio);
+        JDialog dialogo = new JDialog(ventanaPadre);
+        dialogo.setUndecorated(true);
+        dialogo.setModal(false);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(180, 180, 180), 1),
+            BorderFactory.createEmptyBorder(4, 4, 4, 4)
+        ));
+        panel.setBackground(Color.WHITE);
+
+        java.util.List<String> lista = favoritos.getFavoritos();
+
+        if (lista.isEmpty()) {
+            JLabel vacio = new JLabel("  No hay favoritos guardados  ");
+            vacio.setForeground(new Color(150, 150, 150));
+            vacio.setFont(new Font("Arial", Font.ITALIC, 13));
+            panel.add(vacio);
         } else {
-            for (String url : favoritos.getFavoritos()) {
-                String etiqueta = url.length() > 60 ? url.substring(0, 57) + "..." : url;
-                JMenuItem item = new JMenuItem(etiqueta);
-                item.setToolTipText(url);
+            for (String url : lista) {
+                JPanel fila = new JPanel(new BorderLayout(6, 0));
+                fila.setBackground(Color.WHITE);
+                fila.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
-                item.addActionListener(e -> accion.abrirUrl(url));
-                jpopupMenu.add(item);
+                String etiqueta = url.length() > 50 ? url.substring(0, 47) + "..." : url;
+                JLabel lblUrl = new JLabel(etiqueta);
+                lblUrl.setFont(new Font("Arial", Font.PLAIN, 13));
+                lblUrl.setToolTipText(url);
+                lblUrl.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                lblUrl.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+
+                lblUrl.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseEntered(java.awt.event.MouseEvent e) {
+                        fila.setBackground(new Color(230, 240, 255));
+                        lblUrl.setBackground(new Color(230, 240, 255));
+                    }
+                    public void mouseExited(java.awt.event.MouseEvent e) {
+                        fila.setBackground(Color.WHITE);
+                        lblUrl.setBackground(Color.WHITE);
+                    }
+                    public void mouseClicked(java.awt.event.MouseEvent e) {
+                        dialogo.dispose();
+                        accion.abrirUrl(url);
+                    }
+                });
+                JLabel btnEliminar = new JLabel("✕");
+                btnEliminar.setFont(new Font("Dialog", Font.PLAIN, 14));
+                btnEliminar.setPreferredSize(new Dimension(24, 24));
+                btnEliminar.setForeground(new Color(150, 50, 50));
+                btnEliminar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                btnEliminar.setToolTipText("Eliminar de favoritos");
+                btnEliminar.setHorizontalAlignment(SwingConstants.CENTER);
+
+                btnEliminar.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseEntered(java.awt.event.MouseEvent e) {
+                        btnEliminar.setForeground(new Color(200, 80, 80));
+                    }
+                    public void mouseExited(java.awt.event.MouseEvent e) {
+                        btnEliminar.setForeground(new Color(150, 50, 50));
+                    }
+                    public void mouseClicked(java.awt.event.MouseEvent e) {
+                        dialogo.dispose();
+                        accion.eliminarUrl(url);
+                    }
+                });
+
+                fila.add(lblUrl, BorderLayout.CENTER);
+                fila.add(btnEliminar, BorderLayout.EAST);
+                panel.add(fila);
             }
         }
-        botonFavoritos = crearBotonTexto("★", "Favoritos");
-        aplicarEfectoHover(botonFavoritos, new Color(255, 215, 0), new Color(80, 80, 80));
-    } menu.fav.show(botonFavoritos, 0, botonFavoritos.getHeight());
-}*/
 
+        dialogo.add(panel);
+        dialogo.pack();
+
+        // Posicionar debajo del botón
+        Point ubicacion = boton.getLocationOnScreen();
+        dialogo.setLocation(ubicacion.x, ubicacion.y + boton.getHeight());
+
+        // Cerrar al hacer clic fuera
+        dialogo.addWindowFocusListener(new java.awt.event.WindowFocusListener() {
+            public void windowGainedFocus(java.awt.event.WindowEvent e) {}
+            public void windowLostFocus(java.awt.event.WindowEvent e) {
+                dialogo.dispose();
+            }
+        });
+
+        dialogo.setVisible(true);
+    }
+}

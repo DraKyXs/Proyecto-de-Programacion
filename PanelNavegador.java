@@ -8,10 +8,12 @@ public class PanelNavegador extends JPanel {
     private String urlActual = "";
     private String urlAnterior = "";
     private Historial historial = new Historial();
+    private Favoritos favoritos;
     private EncabezadoPestana encabezadoPestana;
 
-    public PanelNavegador(main mainFrame) {
+     public PanelNavegador(main mainFrame, Favoritos favoritos) {
         this.mainFrame = mainFrame;
+        this.favoritos = favoritos;
         setLayout(new BorderLayout());
 
         barraNavegacion = new BarraNavegacion();
@@ -45,6 +47,15 @@ public class PanelNavegador extends JPanel {
         barraNavegacion.alIrAdelante(e -> irAdelante());
         barraNavegacion.alRecargar(e -> recargarPagina());
         barraNavegacion.alMostrarHistorial(e -> mostrarHistorial());
+        barraNavegacion.alToggleFavorito(e -> toggleFavorito());
+        barraNavegacion.getBotonFavoritos().addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    mostrarMenuFavoritos();
+                }
+            }
+        });
     }
 
     private void irAtras() {
@@ -95,7 +106,9 @@ public class PanelNavegador extends JPanel {
                     renderizador.cargarURL(respuestaFinal.cuerpoHtml, respuestaFinal.urlFinal);
                     barraNavegacion.setTextoUrl(respuestaFinal.urlFinal);
                     historial.visitar(respuestaFinal.urlFinal);
+                    urlAnterior = urlActual;
                     urlActual = respuestaFinal.urlFinal;
+                    actualizarEstrellaFavorito();
                     actualizarTituloPestana(respuestaFinal.urlFinal);
                     mainFrame.etiquetaEstado.setText(respuestaFinal.codigoEstado);
                     mainFrame.etiquetaEstado.setForeground(new Color(46, 204, 113));
@@ -129,6 +142,44 @@ public class PanelNavegador extends JPanel {
             renderizador.aplicarTemaVisual(fondo, texto);
         }
     }
+    private void toggleFavorito() {
+        if (urlActual.isBlank()) return;
+        if (favoritos.contiene(urlActual)) {
+            favoritos.eliminar(urlActual);
+        } else {
+            favoritos.agregar(urlActual);
+        }
+        actualizarEstrellaFavorito();
+    }
+
+    private void actualizarEstrellaFavorito() {
+        barraNavegacion.actualizarEstrellaFavorito(
+            !urlActual.isBlank() && favoritos.contiene(urlActual)
+        );
+    }
+
+    private void mostrarMenuFavoritos() {
+        MenuFavoritos.mostrar(
+            barraNavegacion.getBotonFavoritos(),
+            favoritos,
+            new MenuFavoritos.AccionFavoritos() {
+                @Override
+                public void abrirUrl(String url) {
+                    barraNavegacion.setTextoUrl(url);
+                    procesarURLweb(url);
+                }
+                @Override
+                public void eliminarUrl(String url) {
+                    favoritos.eliminar(url);
+                    actualizarEstrellaFavorito();
+                }
+            }
+        );
+    }
+    public void navegar_A(String url) {
+        barraNavegacion.setTextoUrl(url);
+        procesarURLweb(url);
+    }
 
     public void cleanup() {
         try {
@@ -145,6 +196,7 @@ public class PanelNavegador extends JPanel {
             renderizador = null;
             barraNavegacion = null;
             historial = null;
+            favoritos = null;
             encabezadoPestana = null;
         } catch (Exception e) {
             System.err.println("Error durante cleanup de PanelNavegador: " + e.getMessage());

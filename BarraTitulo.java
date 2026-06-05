@@ -20,13 +20,16 @@ public class BarraTitulo extends JPanel {
         JButton btnMin = crearBoton("-", colorBarra);
         JButton btnMax = crearBoton("□", colorBarra);
         JButton btnCerrar = crearBoton("x", colorBarra);
-        JButton favoritos = crearBoton("★", colorBarra);
-        favoritos.setFont(new Font("Arial Unicode MS", Font.BOLD, 18));
-
+        JButton btnFavoritos = crearBoton("★", colorBarra);
+        btnFavoritos.setFont(new Font("Dialog", Font.BOLD, 18));
+        btnFavoritos.setForeground(new Color(180, 150, 0));
+        btnFavoritos.setToolTipText("Ver favoritos");
+        btnFavoritos.setCursor(new Cursor(Cursor.HAND_CURSOR));
         aplicarEfectoHover(btnTema, new Color(200, 200, 200), new Color(80, 80, 80));
         aplicarEfectoHover(btnMin, new Color(200, 200, 200), new Color(80, 80, 80));
         aplicarEfectoHover(btnMax, new Color(200, 200, 200), new Color(80, 80, 80));
         aplicarEfectoHover(btnCerrar, new Color(232, 17, 35), Color.WHITE);
+        aplicarEfectoHover(btnFavoritos, new Color(255, 230, 100), new Color(140, 100, 0));
 
         JPopupMenu menuTemas = new JPopupMenu();
         JMenuItem temaClaro = new JMenuItem("Tema Claro (Defecto)");
@@ -45,13 +48,14 @@ public class BarraTitulo extends JPanel {
         btnMin.addActionListener(e -> mainFrame.setState(JFrame.ICONIFIED));
         btnMax.addActionListener(e -> alternarMaximizado(mainFrame));
         btnCerrar.addActionListener(e -> System.exit(0));
+        btnFavoritos.addActionListener(e -> mainFrame.mostrarMenuFavoritosGlobal(btnFavoritos));
         
 
         buttonsPanel.add(btnTema);
+        buttonsPanel.add(btnFavoritos);
         buttonsPanel.add(btnMin);
         buttonsPanel.add(btnMax);
         buttonsPanel.add(btnCerrar);
-        buttonsPanel.add(favoritos);
 
         add(buttonsPanel, BorderLayout.EAST);
     }

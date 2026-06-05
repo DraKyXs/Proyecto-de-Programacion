@@ -11,6 +11,7 @@ public class main extends JFrame {
     
     private Color fondoActual = Color.WHITE;
     private Color textoActual = Color.BLACK;
+    private final Favoritos favoritos = new Favoritos();
 
     public main() {
         initializeFrame();
@@ -69,7 +70,7 @@ public class main extends JFrame {
 
     // LÓGICA DE PESTAÑAS Y HEADER
     public void abrirNuevaPestana() {
-        PanelNavegador panelContenido = new PanelNavegador(this);
+        PanelNavegador panelContenido = new PanelNavegador(this, favoritos);
 
         //Barra de estado local para cada pestañaaaaaa
         panelContenido.add(new BarraEstado(this), BorderLayout.SOUTH);
@@ -104,6 +105,25 @@ public class main extends JFrame {
     }
     public void setTextoActual(Color c) { 
         this.textoActual = c; 
+    }
+    public Favoritos getFavoritos() {
+        return favoritos;
+    }
+    public void mostrarMenuFavoritosGlobal(JButton boton) {
+        MenuFavoritos.mostrar(boton, favoritos, new MenuFavoritos.AccionFavoritos() {
+            @Override
+            public void abrirUrl(String url) {
+                abrirNuevaPestana();
+                Component comp = sistemaPestanas.getComponentAt(sistemaPestanas.getSelectedIndex());
+                if (comp instanceof PanelNavegador) {
+                    ((PanelNavegador) comp).navegar_A(url);
+                }
+            }
+            @Override
+            public void eliminarUrl(String url) {
+                favoritos.eliminar(url);
+            }
+        });
     }
 
     
