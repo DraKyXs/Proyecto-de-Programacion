@@ -181,7 +181,6 @@ public class BarraNavegacion extends JPanel {
     public JButton getBotonHistorial() {
         return botonHistorial;
     }
-    
     public JLabel getBotonFavoritos() {
         return botonFavoritos;
     }

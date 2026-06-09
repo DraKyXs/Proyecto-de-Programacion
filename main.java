@@ -12,6 +12,7 @@ public class main extends JFrame {
     private Color fondoActual = Color.WHITE;
     private Color textoActual = Color.BLACK;
     private final Favoritos favoritos = new Favoritos();
+     private boolean modoOffline = false;
 
     public main() {
         initializeFrame();
@@ -109,7 +110,22 @@ public class main extends JFrame {
     public Favoritos getFavoritos() {
         return favoritos;
     }
-    public void mostrarMenuFavoritosGlobal(JButton boton) {
+    public boolean isModoOffline() {
+        return modoOffline;
+    }
+
+    public void toggleOffline(JLabel boton) {
+        modoOffline = !modoOffline;
+        if (modoOffline) {
+            boton.setForeground(new Color(180, 80, 80));   // rojo = offline
+            boton.setToolTipText("Offline — clic para volver a online");
+        } else {
+            boton.setForeground(new Color(80, 180, 80));   
+            boton.setToolTipText("Online — clic para ver archivos locales");
+        }
+        boton.repaint();
+    }
+    public void mostrarMenuFavoritosGlobal(JLabel boton) {
         MenuFavoritos.mostrar(boton, favoritos, new MenuFavoritos.AccionFavoritos() {
             @Override
             public void abrirUrl(String url) {
