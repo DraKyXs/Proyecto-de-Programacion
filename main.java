@@ -20,7 +20,7 @@ public class main extends JFrame {
         add(new BarraTitulo(this), BorderLayout.NORTH);
         
         sistemaPestanas = new JTabbedPane();
-        sistemaPestanas.setBackground(new Color(235, 235, 235));
+        sistemaPestanas.setBackground(new Color(234, 238, 244));
         hacerRedimensionable(sistemaPestanas); 
         add(sistemaPestanas, BorderLayout.CENTER);
         
@@ -29,17 +29,17 @@ public class main extends JFrame {
         
         JLabel btnSumar = new JLabel("+"); 
         btnSumar.setFont(new Font("Arial", Font.PLAIN, 24)); 
-        btnSumar.setForeground(new Color(100, 100, 100));
+        btnSumar.setForeground(new Color(102, 102, 102));
         btnSumar.setHorizontalAlignment(SwingConstants.CENTER);
         btnSumar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSumar.setPreferredSize(new Dimension(35, 20));
 
         btnSumar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent e) {
-                btnSumar.setForeground(new Color(46, 204, 113));
+                btnSumar.setForeground(new Color(16, 185, 129));
             }
             public void mouseExited(java.awt.event.MouseEvent e) { 
-                btnSumar.setForeground(new Color(100, 100, 100)); 
+                btnSumar.setForeground(new Color(102, 102, 102)); 
             }
             public void mousePressed(java.awt.event.MouseEvent e) { 
                 abrirNuevaPestana(); 
@@ -117,10 +117,10 @@ public class main extends JFrame {
     public void toggleOffline(JLabel boton) {
         modoOffline = !modoOffline;
         if (modoOffline) {
-            boton.setForeground(new Color(180, 80, 80));   // rojo = offline
+            boton.setForeground(new Color(239, 68, 68));   // rojo = offline
             boton.setToolTipText("Offline — clic para volver a online");
         } else {
-            boton.setForeground(new Color(80, 180, 80));   
+            boton.setForeground(new Color(16, 185, 129));   
             boton.setToolTipText("Online — clic para ver archivos locales");
         }
         boton.repaint();

@@ -19,7 +19,7 @@ public class MenuFavoritos {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(180, 180, 180), 1),
+            BorderFactory.createLineBorder(new Color(209, 213, 219), 1),
             BorderFactory.createEmptyBorder(4, 4, 4, 4)
         ));
         panel.setBackground(Color.WHITE);
@@ -28,7 +28,7 @@ public class MenuFavoritos {
 
         if (lista.isEmpty()) {
             JLabel vacio = new JLabel("  No hay favoritos guardados  ");
-            vacio.setForeground(new Color(150, 150, 150));
+            vacio.setForeground(new Color(153, 153, 153));
             vacio.setFont(new Font("Arial", Font.ITALIC, 13));
             panel.add(vacio);
         } else {
@@ -46,8 +46,8 @@ public class MenuFavoritos {
 
                 lblUrl.addMouseListener(new java.awt.event.MouseAdapter() {
                     public void mouseEntered(java.awt.event.MouseEvent e) {
-                        fila.setBackground(new Color(230, 240, 255));
-                        lblUrl.setBackground(new Color(230, 240, 255));
+                        fila.setBackground(new Color(239, 245, 254));
+                        lblUrl.setBackground(new Color(239, 245, 254));
                     }
                     public void mouseExited(java.awt.event.MouseEvent e) {
                         fila.setBackground(Color.WHITE);
@@ -61,17 +61,17 @@ public class MenuFavoritos {
                 JLabel btnEliminar = new JLabel("✕");
                 btnEliminar.setFont(new Font("Dialog", Font.PLAIN, 14));
                 btnEliminar.setPreferredSize(new Dimension(24, 24));
-                btnEliminar.setForeground(new Color(150, 50, 50));
+                btnEliminar.setForeground(new Color(239, 68, 68));
                 btnEliminar.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 btnEliminar.setToolTipText("Eliminar de favoritos");
                 btnEliminar.setHorizontalAlignment(SwingConstants.CENTER);
 
                 btnEliminar.addMouseListener(new java.awt.event.MouseAdapter() {
                     public void mouseEntered(java.awt.event.MouseEvent e) {
-                        btnEliminar.setForeground(new Color(200, 80, 80));
+                        btnEliminar.setForeground(new Color(255, 107, 107));
                     }
                     public void mouseExited(java.awt.event.MouseEvent e) {
-                        btnEliminar.setForeground(new Color(150, 50, 50));
+                        btnEliminar.setForeground(new Color(239, 68, 68));
                     }
                     public void mouseClicked(java.awt.event.MouseEvent e) {
                         dialogo.dispose();

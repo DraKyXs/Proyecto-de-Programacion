@@ -130,7 +130,7 @@ public class Renderizador extends JPanel {
                 areaContenido.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             } else {
                 areaContenido.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                cambiarColorEnlace(e.getSourceElement(), new Color(46, 204, 113));
+                cambiarColorEnlace(e.getSourceElement(), new Color(16, 185, 129));
             }
         } else if (e.getEventType() == HyperlinkEvent.EventType.EXITED) {
             areaContenido.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

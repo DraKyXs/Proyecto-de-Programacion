@@ -6,7 +6,7 @@ public class BarraTitulo extends JPanel {
     private JLabel btnOffline;
     public BarraTitulo(main mainFrame) {
         setLayout(new BorderLayout());
-        Color colorBarra = new Color(220, 220, 220);
+        Color colorBarra = new Color(234, 238, 244);
         setBackground(colorBarra);
         setPreferredSize(new Dimension(0, 40));
         moverVentana(this, mainFrame);
@@ -22,7 +22,7 @@ public class BarraTitulo extends JPanel {
         JButton btnCerrar = crearBoton("x", colorBarra);
         JLabel btnFavoritos = new JLabel("★");
         btnFavoritos.setFont(new Font("Dialog", Font.PLAIN, 20));
-        btnFavoritos.setForeground(new Color(180, 150, 0));
+        btnFavoritos.setForeground(new Color(245, 158, 11));
         btnFavoritos.setToolTipText("Ver favoritos");
         btnFavoritos.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnFavoritos.setPreferredSize(new Dimension(45, 40));
@@ -30,15 +30,15 @@ public class BarraTitulo extends JPanel {
         
         btnOffline = new JLabel("☁");
         btnOffline.setFont(new Font("Dialog", Font.PLAIN, 20));
-        btnOffline.setForeground(new Color(80, 180, 80));
+        btnOffline.setForeground(new Color(16, 185, 129));
         btnOffline.setToolTipText("Online — clic para modo offline");
         btnOffline.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnOffline.setPreferredSize(new Dimension(45, 40));
         btnOffline.setHorizontalAlignment(SwingConstants.CENTER);
 
-        aplicarEfectoHover(btnTema, new Color(200, 200, 200), new Color(80, 80, 80));
-        aplicarEfectoHover(btnMin, new Color(200, 200, 200), new Color(80, 80, 80));
-        aplicarEfectoHover(btnMax, new Color(200, 200, 200), new Color(80, 80, 80));
+        aplicarEfectoHover(btnTema, new Color(209, 213, 219), new Color(26, 26, 26));
+        aplicarEfectoHover(btnMin, new Color(209, 213, 219), new Color(26, 26, 26));
+        aplicarEfectoHover(btnMax, new Color(209, 213, 219), new Color(26, 26, 26));
         aplicarEfectoHover(btnCerrar, new Color(232, 17, 35), Color.WHITE);
 
         JPopupMenu menuTemas = new JPopupMenu();
@@ -63,10 +63,10 @@ public class BarraTitulo extends JPanel {
                 mainFrame.mostrarMenuFavoritosGlobal(btnFavoritos);
             }
             public void mouseEntered(MouseEvent e) {
-                btnFavoritos.setForeground(new Color(218, 165, 32));
+                btnFavoritos.setForeground(new Color(245, 158, 11));
             }
             public void mouseExited(MouseEvent e) {
-                btnFavoritos.setForeground(new Color(180, 150, 0));
+                btnFavoritos.setForeground(new Color(245, 158, 11));
             }
         });
         btnOffline.addMouseListener(new MouseAdapter() {
@@ -79,7 +79,7 @@ public class BarraTitulo extends JPanel {
             public void mouseExited(MouseEvent e) {
                 btnOffline.setForeground(
                     mainFrame.isModoOffline()
-                        ? new Color(180, 80, 80)
+                        ? new Color(239, 68, 68)
                         : new Color(80, 180, 80)
                 );
             }
@@ -121,7 +121,7 @@ public class BarraTitulo extends JPanel {
     private JButton crearBoton(String texto, Color colorFondo) {
         JButton btn = new JButton(texto);
         btn.setBackground(colorFondo);
-        btn.setForeground(new Color(80, 80, 80));
+        btn.setForeground(new Color(26, 26, 26));
         btn.setFont(new Font("Arial", Font.BOLD, 18));
         btn.setBorderPainted(false);
         btn.setFocusPainted(false);

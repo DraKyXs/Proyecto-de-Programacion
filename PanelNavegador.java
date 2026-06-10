@@ -5,11 +5,12 @@ public class PanelNavegador extends JPanel {
     private final main mainFrame;
     private BarraNavegacion barraNavegacion;
     public Renderizador renderizador;
-    private String urlActual = "";
-    private String urlAnterior = "";
+    private java.util.List<String> historialNavegacion = new java.util.ArrayList<>();
+    private int indiceNavegacion = -1;
     private Historial historial = new Historial();
     private Favoritos favoritos;
     private EncabezadoPestana encabezadoPestana;
+    private volatile boolean estaCargando = false;
 
      public PanelNavegador(main mainFrame, Favoritos favoritos) {
         this.mainFrame = mainFrame;
@@ -59,46 +60,58 @@ public class PanelNavegador extends JPanel {
     }
 
     private void irAtras() {
-        if (!urlAnterior.isEmpty()) {
-            String temp = urlActual;
-            urlActual = urlAnterior;
-            urlAnterior = temp;
-
-            barraNavegacion.setTextoUrl(urlActual);
-            procesarURLweb(urlActual);
-            actualizarBotones();
-        }
+        if (estaCargando || indiceNavegacion <= 0) return;
+        indiceNavegacion--;
+        String url = historialNavegacion.get(indiceNavegacion);
+        barraNavegacion.setTextoUrl(url);
+        procesarURLwebSinHistorial(url);
     }
 
     private void irAdelante() {
-        irAtras();
+        if (estaCargando || indiceNavegacion >= historialNavegacion.size() - 1) return;
+        indiceNavegacion++;
+        String url = historialNavegacion.get(indiceNavegacion);
+        barraNavegacion.setTextoUrl(url);
+        procesarURLwebSinHistorial(url);
     }
 
     private void actualizarBotones() {
-        barraNavegacion.actualizarBotonesNavegacion(!urlAnterior.isEmpty());
+        boolean puedeIrAtras = !estaCargando && indiceNavegacion > 0;
+        boolean puedeIrAdelante = !estaCargando && indiceNavegacion < historialNavegacion.size() - 1;
+        barraNavegacion.actualizarBotonesNavegacion(puedeIrAtras, puedeIrAdelante);
     }
 
     private void recargarPagina() {
-        if (!urlActual.isEmpty()) {
-            procesarURLweb(urlActual);
+        if (indiceNavegacion >= 0 && indiceNavegacion < historialNavegacion.size()) {
+            procesarURLwebSinHistorial(historialNavegacion.get(indiceNavegacion));
         }
     }
 
+    private void procesarURLwebSinHistorial(String texto) {
+        procesarURLwebInterno(texto, false);
+    }
+
     private void procesarURLweb(String texto) {
-    
+        procesarURLwebInterno(texto, true);
+    }
+
+    private void procesarURLwebInterno(String texto, boolean agregarAlHistorial) {
+
         if (mainFrame.isModoOffline()) {
             mainFrame.etiquetaEstado.setText("modo offline solo se pueden archivos locales");
-            mainFrame.etiquetaEstado.setForeground(new Color(180, 80, 80));
+            mainFrame.etiquetaEstado.setForeground(new Color(239, 68, 68));
             return;
         }
 
-        
+        estaCargando = true;
+        actualizarBotones();
+
         String textoLimpio = texto.trim();
         boolean usarFallbackHttp = !UtilidadesUrl.tieneProtocoloHttp(textoLimpio);
         final String urlFinal = UtilidadesUrl.agregarHttpsSiFalta(textoLimpio);
 
         mainFrame.etiquetaEstado.setText("Cargando...");
-        mainFrame.etiquetaEstado.setForeground(new Color(41, 128, 185));
+        mainFrame.etiquetaEstado.setForeground(new Color(59, 130, 246));
 
         new Thread(() -> {
             try {
@@ -109,27 +122,35 @@ public class PanelNavegador extends JPanel {
                 }
 
                 final RespuestaHttp respuestaFinal = respuesta;
-                
 
                 SwingUtilities.invokeLater(() -> {
                     System.out.println(respuestaFinal.cuerpoHtml);
                     renderizador.cargarURL(respuestaFinal.cuerpoHtml, respuestaFinal.urlFinal);
                     barraNavegacion.setTextoUrl(respuestaFinal.urlFinal);
                     historial.visitar(respuestaFinal.urlFinal);
-                    urlAnterior = urlActual;
-                    urlActual = respuestaFinal.urlFinal;
+
+                    if (agregarAlHistorial) {
+                        indiceNavegacion++;
+                        historialNavegacion.add(respuestaFinal.urlFinal);
+                        historialNavegacion.subList(indiceNavegacion + 1, historialNavegacion.size()).clear();
+                    }
+
                     actualizarEstrellaFavorito();
                     actualizarTituloPestana(respuestaFinal.urlFinal);
-                    actualizarBotones();
                     mainFrame.etiquetaEstado.setText(respuestaFinal.codigoEstado);
-                    mainFrame.etiquetaEstado.setForeground(new Color(46, 204, 113));
+                    mainFrame.etiquetaEstado.setForeground(new Color(16, 185, 129));
+
+                    estaCargando = false;
+                    actualizarBotones();
                 });
             } catch (Exception e) {
                 SwingUtilities.invokeLater(() -> {
-                    urlActual = urlFinal;
                     mainFrame.etiquetaEstado.setText("Error");
                     mainFrame.etiquetaEstado.setForeground(Color.RED);
                     JOptionPane.showMessageDialog(mainFrame, "Error al cargar la pagina: " + e.getMessage());
+
+                    estaCargando = false;
+                    actualizarBotones();
                 });
             }
         }).start();
@@ -154,6 +175,7 @@ public class PanelNavegador extends JPanel {
         }
     }
     private void toggleFavorito() {
+        String urlActual = obtenerUrlActual();
         if (urlActual.isBlank()) return;
         if (favoritos.contiene(urlActual)) {
             favoritos.eliminar(urlActual);
@@ -164,9 +186,17 @@ public class PanelNavegador extends JPanel {
     }
 
     private void actualizarEstrellaFavorito() {
+        String urlActual = obtenerUrlActual();
         barraNavegacion.actualizarEstrellaFavorito(
             !urlActual.isBlank() && favoritos.contiene(urlActual)
         );
+    }
+
+    private String obtenerUrlActual() {
+        if (indiceNavegacion >= 0 && indiceNavegacion < historialNavegacion.size()) {
+            return historialNavegacion.get(indiceNavegacion);
+        }
+        return "";
     }
 
     private void mostrarMenuFavoritos() {

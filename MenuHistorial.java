@@ -7,7 +7,7 @@ public class MenuHistorial {
         void abrirUrl(String url);
     }
 
-    public static void mostrar(JButton boton, Historial historial, AccionHistorial accion) {
+    public static void mostrar(JComponent boton, Historial historial, AccionHistorial accion) {
         JPopupMenu menu = new JPopupMenu("Historial");
         LinkedList<String> urls = historial.getHistorial();
 

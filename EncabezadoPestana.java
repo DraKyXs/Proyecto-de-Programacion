@@ -14,7 +14,7 @@ public class EncabezadoPestana extends JPanel {
 
         JLabel btnCerrar = new JLabel(" x ");
         btnCerrar.setFont(new Font("Arial", Font.BOLD, 16));
-        btnCerrar.setForeground(new Color(150, 150, 150));
+        btnCerrar.setForeground(new Color(153, 153, 153));
         btnCerrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnCerrar.addMouseListener(new MouseAdapter() {
             @Override
