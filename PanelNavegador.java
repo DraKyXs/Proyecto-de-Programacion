@@ -101,8 +101,10 @@ public class PanelNavegador extends JPanel {
                 }
 
                 final RespuestaHttp respuestaFinal = respuesta;
+                
 
                 SwingUtilities.invokeLater(() -> {
+                    System.out.println(respuestaFinal.cuerpoHtml);
                     renderizador.cargarURL(respuestaFinal.cuerpoHtml, respuestaFinal.urlFinal);
                     barraNavegacion.setTextoUrl(respuestaFinal.urlFinal);
                     historial.visitar(respuestaFinal.urlFinal);
@@ -110,6 +112,7 @@ public class PanelNavegador extends JPanel {
                     urlActual = respuestaFinal.urlFinal;
                     actualizarEstrellaFavorito();
                     actualizarTituloPestana(respuestaFinal.urlFinal);
+                    actualizarBotones();
                     mainFrame.etiquetaEstado.setText(respuestaFinal.codigoEstado);
                     mainFrame.etiquetaEstado.setForeground(new Color(46, 204, 113));
                 });

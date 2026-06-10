@@ -64,9 +64,9 @@ public class Renderizador extends JPanel {
         }
 
         areaContenido.setContentType("text/html");
+        System.out.println(contenidoURL);
 
         String htmlSeguro = sanitizarHtmlParaSwing(contenidoURL);
-
         HTMLDocument documento = (HTMLDocument) htmlEditorKit.createDefaultDocument();
         try {
             documento.setAsynchronousLoadPriority(-1);
@@ -94,16 +94,13 @@ public class Renderizador extends JPanel {
         htmlSeguro = htmlSeguro.replaceAll("(?is)<link[^>]*rel\\s*=\\s*['\"]?stylesheet['\"]?[^>]*>", "");
         htmlSeguro = htmlSeguro.replaceAll("(?is)<noscript[^>]*>.*?</noscript>", "");
         htmlSeguro = htmlSeguro.replaceAll("(?i)\\sstyle\\s*=\\s*(['\"]).*?\\1", "");
-        htmlSeguro = htmlSeguro.replaceAll("(?is)<script[^>]*>.*?</script>", mensaje_no_render);
-        htmlSeguro = htmlSeguro.replaceAll("(?is)<head[^>]*>.*?</head>", mensaje_no_render);
-        htmlSeguro = htmlSeguro.replaceAll("(?is)<meta[^>]*>.*?</meta>", mensaje_no_render);
 
-        htmlSeguro = htmlSeguro.replaceAll("(?is)<audio[^>]*>.*?</audio>", mensaje_no_render);
-        htmlSeguro = htmlSeguro.replaceAll("(?is)<video[^>]*>.*?</video>", mensaje_no_render);
-        htmlSeguro = htmlSeguro.replaceAll("(?is)<source[^>]*>.*?</source>", mensaje_no_render);
-        htmlSeguro = htmlSeguro.replaceAll("(?is)<track[^>]*>.*?</track>", mensaje_no_render);
-        htmlSeguro = htmlSeguro.replaceAll("(?is)<embed[^>]*>.*?</embed>", mensaje_no_render);
-        htmlSeguro = htmlSeguro.replaceAll("(?is)<object[^>]*>.*?</object>", mensaje_no_render);
+        htmlSeguro = htmlSeguro.replaceAll("(?is)<audio[^>]*>.*?</audio>", mensaje_detecta);
+        htmlSeguro = htmlSeguro.replaceAll("(?is)<video[^>]*>.*?</video>", mensaje_detecta);
+        htmlSeguro = htmlSeguro.replaceAll("(?is)<source[^>]*>.*?</source>", mensaje_detecta);
+        htmlSeguro = htmlSeguro.replaceAll("(?is)<track[^>]*>.*?</track>", mensaje_detecta);
+        htmlSeguro = htmlSeguro.replaceAll("(?is)<embed[^>]*>.*?</embed>", mensaje_detecta);
+        htmlSeguro = htmlSeguro.replaceAll("(?is)<object[^>]*>.*?</object>", mensaje_detecta);
         
         return htmlSeguro;
     }
