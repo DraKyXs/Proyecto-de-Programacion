@@ -3,7 +3,7 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class BarraTitulo extends JPanel {
-
+    private JLabel btnOffline;
     public BarraTitulo(main mainFrame) {
         setLayout(new BorderLayout());
         Color colorBarra = new Color(220, 220, 220);
@@ -20,16 +20,26 @@ public class BarraTitulo extends JPanel {
         JButton btnMin = crearBoton("-", colorBarra);
         JButton btnMax = crearBoton("□", colorBarra);
         JButton btnCerrar = crearBoton("x", colorBarra);
-        JButton btnFavoritos = crearBoton("★", colorBarra);
-        btnFavoritos.setFont(new Font("Dialog", Font.BOLD, 18));
+        JLabel btnFavoritos = new JLabel("★");
+        btnFavoritos.setFont(new Font("Dialog", Font.PLAIN, 20));
         btnFavoritos.setForeground(new Color(180, 150, 0));
         btnFavoritos.setToolTipText("Ver favoritos");
         btnFavoritos.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnFavoritos.setPreferredSize(new Dimension(45, 40));
+        btnFavoritos.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        btnOffline = new JLabel("☁");
+        btnOffline.setFont(new Font("Dialog", Font.PLAIN, 20));
+        btnOffline.setForeground(new Color(80, 180, 80));
+        btnOffline.setToolTipText("Online — clic para modo offline");
+        btnOffline.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnOffline.setPreferredSize(new Dimension(45, 40));
+        btnOffline.setHorizontalAlignment(SwingConstants.CENTER);
+
         aplicarEfectoHover(btnTema, new Color(200, 200, 200), new Color(80, 80, 80));
         aplicarEfectoHover(btnMin, new Color(200, 200, 200), new Color(80, 80, 80));
         aplicarEfectoHover(btnMax, new Color(200, 200, 200), new Color(80, 80, 80));
         aplicarEfectoHover(btnCerrar, new Color(232, 17, 35), Color.WHITE);
-        aplicarEfectoHover(btnFavoritos, new Color(255, 230, 100), new Color(140, 100, 0));
 
         JPopupMenu menuTemas = new JPopupMenu();
         JMenuItem temaClaro = new JMenuItem("Tema Claro (Defecto)");
@@ -48,10 +58,36 @@ public class BarraTitulo extends JPanel {
         btnMin.addActionListener(e -> mainFrame.setState(JFrame.ICONIFIED));
         btnMax.addActionListener(e -> alternarMaximizado(mainFrame));
         btnCerrar.addActionListener(e -> System.exit(0));
-        btnFavoritos.addActionListener(e -> mainFrame.mostrarMenuFavoritosGlobal(btnFavoritos));
+        btnFavoritos.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                mainFrame.mostrarMenuFavoritosGlobal(btnFavoritos);
+            }
+            public void mouseEntered(MouseEvent e) {
+                btnFavoritos.setForeground(new Color(218, 165, 32));
+            }
+            public void mouseExited(MouseEvent e) {
+                btnFavoritos.setForeground(new Color(180, 150, 0));
+            }
+        });
+        btnOffline.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                mainFrame.toggleOffline(btnOffline);
+            }
+            public void mouseEntered(MouseEvent e) {
+                btnOffline.setForeground(btnOffline.getForeground().darker());
+            }
+            public void mouseExited(MouseEvent e) {
+                btnOffline.setForeground(
+                    mainFrame.isModoOffline()
+                        ? new Color(180, 80, 80)
+                        : new Color(80, 180, 80)
+                );
+            }
+        });
         
 
         buttonsPanel.add(btnTema);
+        buttonsPanel.add(btnOffline);
         buttonsPanel.add(btnFavoritos);
         buttonsPanel.add(btnMin);
         buttonsPanel.add(btnMax);

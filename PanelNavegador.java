@@ -85,6 +85,14 @@ public class PanelNavegador extends JPanel {
     }
 
     private void procesarURLweb(String texto) {
+    
+        if (mainFrame.isModoOffline()) {
+            mainFrame.etiquetaEstado.setText("modo offline solo se pueden archivos locales");
+            mainFrame.etiquetaEstado.setForeground(new Color(180, 80, 80));
+            return;
+        }
+
+        
         String textoLimpio = texto.trim();
         boolean usarFallbackHttp = !UtilidadesUrl.tieneProtocoloHttp(textoLimpio);
         final String urlFinal = UtilidadesUrl.agregarHttpsSiFalta(textoLimpio);
