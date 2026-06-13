@@ -69,4 +69,18 @@ public class UtilidadesUrl {
             return urlTexto;
         }
     }
+public static boolean esRutaLocal(String texto) {
+    if (texto == null || texto.isBlank()) return false;
+    return texto.startsWith("file:///")
+        || texto.startsWith("file://")
+        || texto.startsWith("file:/")
+        || texto.startsWith("file:\\")
+        || texto.matches("^[a-zA-Z]:\\\\.*")
+        || texto.matches("^[a-zA-Z]:/.*")
+        || texto.startsWith("/");
+}
+public static String convertirAFileUrl(String texto) {
+    if (texto.startsWith("file://")) return texto;
+    return new java.io.File(texto).toURI().toString();
+}
 }

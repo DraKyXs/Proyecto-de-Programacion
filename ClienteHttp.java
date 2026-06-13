@@ -187,4 +187,49 @@ public class ClienteHttp {
             .replace("<", "&lt;")
             .replace(">", "&gt;");
     }
+    public static RespuestaHttp leerArchivoLocal(String rutaTexto) {
+    try {
+        java.io.File archivo;
+        if (rutaTexto.startsWith("file:")) {
+            String normalizada = rutaTexto;
+            if (normalizada.startsWith("file:///")) {
+            } else if (normalizada.startsWith("file://")) {
+                normalizada = "file:///" + normalizada.substring(7);
+            } else if (normalizada.startsWith("file:/")) {
+                normalizada = "file:///" + normalizada.substring(6);
+            }
+            archivo = new java.io.File(new java.net.URI(normalizada));
+        } else {
+            archivo = new java.io.File(rutaTexto);
+        }
+
+        if (!archivo.exists()) {
+            return new RespuestaHttp(
+                "404 Not Found",
+                "<html><body><h1>Archivo no encontrado</h1><p>" + rutaTexto + "</p></body></html>",
+                rutaTexto,
+                false
+            );
+        }
+
+        String contenido = new String(
+            java.nio.file.Files.readAllBytes(archivo.toPath()),
+            java.nio.charset.StandardCharsets.UTF_8
+        );
+
+        return new RespuestaHttp(
+            "200 OK",
+            contenido,
+            archivo.toURI().toString(),
+            false
+        );
+    } catch (Exception e) {
+        return new RespuestaHttp(
+            "Error",
+            "<html><body><h1>Error al leer el archivo</h1><p>" + e.getMessage() + "</p></body></html>",
+            rutaTexto,
+            false
+        );
+    }
+    }
 }

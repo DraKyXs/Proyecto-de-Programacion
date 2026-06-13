@@ -6,6 +6,7 @@ public class main extends JFrame {
     
     private JTabbedPane sistemaPestanas;
     public JLabel etiquetaEstado;
+    public JPanel barraEstado;
     
     private int contadorPestanas = 1;
     
@@ -115,16 +116,24 @@ public class main extends JFrame {
     }
 
     public void toggleOffline(JLabel boton) {
-        modoOffline = !modoOffline;
-        if (modoOffline) {
-            boton.setForeground(new Color(239, 68, 68));   // rojo = offline
-            boton.setToolTipText("Offline — clic para volver a online");
-        } else {
-            boton.setForeground(new Color(16, 185, 129));   
-            boton.setToolTipText("Online — clic para ver archivos locales");
+    modoOffline = !modoOffline;
+    if (modoOffline) {
+        boton.setForeground(new Color(239, 68, 68));
+        boton.setToolTipText("Offline — clic para volver a online");
+        if (barraEstado != null) {
+            barraEstado.setBackground(new Color(248, 180, 180)); 
+            barraEstado.repaint();
         }
-        boton.repaint();
+    } else {
+        boton.setForeground(new Color(16, 185, 129));
+        boton.setToolTipText("Online — clic para modo offline");
+        if (barraEstado != null) {
+            barraEstado.setBackground(new Color(234, 238, 244)); 
+            barraEstado.repaint();
+        }
     }
+    boton.repaint();
+}
     public void mostrarMenuFavoritosGlobal(JLabel boton) {
         MenuFavoritos.mostrar(boton, favoritos, new MenuFavoritos.AccionFavoritos() {
             @Override

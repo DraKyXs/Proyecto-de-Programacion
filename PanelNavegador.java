@@ -96,29 +96,37 @@ public class PanelNavegador extends JPanel {
     }
 
     private void procesarURLwebInterno(String texto, boolean agregarAlHistorial) {
-
-        if (mainFrame.isModoOffline()) {
-            mainFrame.etiquetaEstado.setText("modo offline solo se pueden archivos locales");
+        
+        String textoLimpio = texto.trim();
+        boolean esLocal = UtilidadesUrl.esRutaLocal(textoLimpio);
+        boolean usarFallbackHttp = !esLocal && !UtilidadesUrl.tieneProtocoloHttp(textoLimpio);
+        final String urlFinal = esLocal ? textoLimpio : UtilidadesUrl.agregarHttpsSiFalta(textoLimpio);
+        
+       if (mainFrame.isModoOffline() && !UtilidadesUrl.esRutaLocal(textoLimpio)) {
+            mainFrame.etiquetaEstado.setText("Modo offline — solo archivos locales");
             mainFrame.etiquetaEstado.setForeground(new Color(239, 68, 68));
+            JOptionPane.showMessageDialog(mainFrame, 
+                "Estás en modo offline.\nIngresa una ruta local, por ejemplo:\nC:\\paginas\\index.html");
             return;
         }
 
         estaCargando = true;
         actualizarBotones();
 
-        String textoLimpio = texto.trim();
-        boolean usarFallbackHttp = !UtilidadesUrl.tieneProtocoloHttp(textoLimpio);
-        final String urlFinal = UtilidadesUrl.agregarHttpsSiFalta(textoLimpio);
 
         mainFrame.etiquetaEstado.setText("Cargando...");
         mainFrame.etiquetaEstado.setForeground(new Color(59, 130, 246));
 
         new Thread(() -> {
             try {
-                RespuestaHttp respuesta = ClienteHttp.peticionHttpGET(urlFinal);
-
-                if (usarFallbackHttp && respuesta.permiteFallbackHttp()) {
-                    respuesta = ClienteHttp.peticionHttpGET("http://" + texto.trim());
+                RespuestaHttp respuesta;
+                if (esLocal) {
+                    respuesta = ClienteHttp.leerArchivoLocal(textoLimpio);
+                } else {
+                    respuesta = ClienteHttp.peticionHttpGET(urlFinal);
+                    if (usarFallbackHttp && respuesta.permiteFallbackHttp()) {
+                        respuesta = ClienteHttp.peticionHttpGET("http://" + texto.trim());
+                    }
                 }
 
                 final RespuestaHttp respuestaFinal = respuesta;
@@ -126,7 +134,7 @@ public class PanelNavegador extends JPanel {
                 SwingUtilities.invokeLater(() -> {
                     System.out.println(respuestaFinal.cuerpoHtml);
                     renderizador.cargarURL(respuestaFinal.cuerpoHtml, respuestaFinal.urlFinal);
-                    barraNavegacion.setTextoUrl(respuestaFinal.urlFinal);
+                    barraNavegacion.setTextoUrl(normalizarUrlMostrada(respuestaFinal.urlFinal));
                     historial.visitar(respuestaFinal.urlFinal);
 
                     if (agregarAlHistorial) {
@@ -197,6 +205,13 @@ public class PanelNavegador extends JPanel {
             return historialNavegacion.get(indiceNavegacion);
         }
         return "";
+    }
+    private String normalizarUrlMostrada(String url) {
+        if (url == null) return "";
+        if (url.startsWith("file:///")) return url;
+        if (url.startsWith("file://")) return "file:///" + url.substring(7);
+        if (url.startsWith("file:/"))  return "file:///" + url.substring(6);
+        return url;
     }
 
     private void mostrarMenuFavoritos() {
