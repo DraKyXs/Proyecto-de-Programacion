@@ -73,7 +73,10 @@ public class Renderizador extends JPanel {
 
             documento.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
 
-            documento.setBase(new URL(baseUrl));
+            URL urlBase = crearUrlBaseValida(baseUrl);
+            if (urlBase != null) {
+                documento.setBase(urlBase);
+            }
             htmlEditorKit.read(new StringReader(htmlSeguro), documento, 0);
             areaContenido.setDocument(documento);
         } catch (IOException | BadLocationException | RuntimeException e) {
@@ -83,10 +86,23 @@ public class Renderizador extends JPanel {
         areaContenido.setCaretPosition(0);
     }
 
+    private URL crearUrlBaseValida(String baseUrl) {
+        if (baseUrl == null || baseUrl.isBlank()) {
+            return null;
+        }
+
+        try {
+            return new URL(baseUrl);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
 
     private String sanitizarHtmlParaSwing(String html) {
         String htmlSeguro = html;
 
+        htmlSeguro = htmlSeguro.replaceFirst("(?is)^\\s*<\\?xml[^>]*\\?>", "");
         htmlSeguro = htmlSeguro.replaceAll("(?is)<a\\b[^>]*>\\s*(<img\\b[^>]*>)\\s*</a>", "$1");
 
         htmlSeguro = htmlSeguro.replaceAll("(?is)<script[^>]*>.*?</script>", "");
@@ -122,7 +138,20 @@ public class Renderizador extends JPanel {
     private void manejarEventosEnlace(HyperlinkEvent e) {
         if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
             if (listener != null && !esImagenEnlazada(e.getSourceElement())) {
-                String destino = e.getURL() != null ? e.getURL().toString() : e.getDescription();
+                String destino = e.getDescription();
+
+                if (destino == null && e.getURL() != null) {
+                    destino = e.getURL().toString();
+                }
+
+                if (destino == null) {
+                    destino = "";
+                }
+
+                if (destino.startsWith("newtab://")) {
+                    destino = "NEWTAB:" + destino.substring(9);
+                }
+
                 listener.navegar(destino);
             }
         } else if (e.getEventType() == HyperlinkEvent.EventType.ENTERED) {
