@@ -98,6 +98,12 @@ public class PanelNavegador extends JPanel {
     private void procesarURLwebInterno(String texto, boolean agregarAlHistorial) {
         
         String textoLimpio = texto.trim();
+        String comandoIA = detectarComandoIA(textoLimpio);
+        if (comandoIA != null) {
+            procesarComandoIA(comandoIA, agregarAlHistorial);
+            return;
+        }
+        
         boolean esLocal = UtilidadesUrl.esRutaLocal(textoLimpio);
         boolean usarFallbackHttp = !esLocal && !UtilidadesUrl.tieneProtocoloHttp(textoLimpio);
         final String urlFinal = esLocal ? textoLimpio : UtilidadesUrl.agregarHttpsSiFalta(textoLimpio);
@@ -258,4 +264,55 @@ public class PanelNavegador extends JPanel {
             System.err.println("Error durante cleanup de PanelNavegador: " + e.getMessage());
         }
     }
+    private String detectarComandoIA(String texto) {
+    String t = texto.toLowerCase();
+    if (t.startsWith("ai") || t.startsWith("gemini ") || 
+        t.startsWith("asistente ") || t.startsWith("ia:")) {
+        
+        if (t.startsWith("ai")) return texto.substring(3).trim();
+        if (t.startsWith("ia")) return texto.substring(3).trim();
+        if (t.startsWith("gemini ")) return texto.substring(7).trim();
+        if (t.startsWith("asistente ")) return texto.substring(10).trim();
+    }
+    return null;
+}
+
+private void procesarComandoIA(String comando, boolean agregarAlHistorial) {
+    estaCargando = true;
+    actualizarBotones();
+    mainFrame.etiquetaEstado.setText("Consultando Asistente IA...");
+    mainFrame.etiquetaEstado.setForeground(new Color(59, 130, 246));
+
+    new Thread(() -> {
+        try {
+            String htmlRespuesta = GeminiAPIClient.procesarComando(comando);
+
+            SwingUtilities.invokeLater(() -> {
+                renderizador.cargarURL(htmlRespuesta, "https://asistente.local");
+                barraNavegacion.setTextoUrl("Asistente IA: " + comando);
+                
+                if (agregarAlHistorial) {
+                    indiceNavegacion++;
+                    String urlFake = "ia://" + comando;
+                    historialNavegacion.add(urlFake);
+                    historialNavegacion.subList(indiceNavegacion + 1, historialNavegacion.size()).clear();
+                }
+
+                actualizarTituloPestana("Asistente IA");
+                mainFrame.etiquetaEstado.setText("200 OK - IA");
+                mainFrame.etiquetaEstado.setForeground(new Color(16, 185, 129));
+
+                estaCargando = false;
+                actualizarBotones();
+            });
+        } catch (Exception e) {
+            SwingUtilities.invokeLater(() -> {
+                mainFrame.etiquetaEstado.setText("Error IA");
+                mainFrame.etiquetaEstado.setForeground(Color.RED);
+                estaCargando = false;
+                actualizarBotones();
+            });
+        }
+    }).start();
+}
 }
