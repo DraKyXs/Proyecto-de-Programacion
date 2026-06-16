@@ -114,6 +114,11 @@ public class PanelNavegador extends JPanel {
 
         String textoLimpio = texto.trim();
         System.out.println("DEBUG: procesarURLwebInterno llamado con: " + textoLimpio);
+        String comandoIA = detectarComandoIA(textoLimpio);
+        if (comandoIA != null) {
+            procesarComandoIA(comandoIA, agregarAlHistorial);
+            return;
+        }
 
         if (textoLimpio.startsWith("search://")) {
             System.out.println("DEBUG: Detectada búsqueda: " + textoLimpio);
@@ -327,8 +332,8 @@ public class PanelNavegador extends JPanel {
     if (t.startsWith("ai") || t.startsWith("gemini ") || 
         t.startsWith("asistente ") || t.startsWith("ia:")) {
         
-        if (t.startsWith("ai")) return texto.substring(3).trim();
-        if (t.startsWith("ia")) return texto.substring(3).trim();
+        if (t.startsWith("ai ")) return texto.substring(3).trim();
+        if (t.startsWith("ia ")) return texto.substring(3).trim();
         if (t.startsWith("gemini ")) return texto.substring(7).trim();
         if (t.startsWith("asistente ")) return texto.substring(10).trim();
     }
