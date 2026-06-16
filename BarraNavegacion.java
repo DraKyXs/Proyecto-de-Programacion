@@ -12,7 +12,8 @@ public class BarraNavegacion extends JPanel {
     private JButton botonAdelante;
     private JLabel botonRecargar;
     private JLabel botonHistorial;
-   private JLabel botonFavoritos;
+    private JLabel botonFavoritos;
+    private JLabel botonBusqueda;
     private DocumentListener documentListener;
     private boolean esFavorito = false;
 
@@ -43,6 +44,15 @@ public class BarraNavegacion extends JPanel {
         botonHistorial.setCursor(new Cursor(Cursor.HAND_CURSOR));
         botonHistorial.setPreferredSize(new Dimension(45, 35));
         botonHistorial.setHorizontalAlignment(SwingConstants.CENTER);
+
+        botonBusqueda = new JLabel("🔍");
+        botonBusqueda.setFont(new Font("Dialog", Font.BOLD, 18));
+        botonBusqueda.setForeground(new Color(60, 60, 60));
+        botonBusqueda.setToolTipText("Motor de Búsqueda");
+        botonBusqueda.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        botonBusqueda.setPreferredSize(new Dimension(45, 35));
+        botonBusqueda.setHorizontalAlignment(SwingConstants.CENTER);
+
         botonFavoritos = new JLabel("☆");
 
 
@@ -92,16 +102,19 @@ public class BarraNavegacion extends JPanel {
         add(botonHistorial, gbc);
 
         gbc.gridx = 4;
+        add(botonBusqueda, gbc);
+
+        gbc.gridx = 5;
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(campoUrl, gbc);
 
-        gbc.gridx = 5;
+        gbc.gridx = 6;
         gbc.weightx = 0;
         gbc.fill = GridBagConstraints.NONE;
         add(botonIr, gbc);
 
-        gbc.gridx = 6;
+        gbc.gridx = 7;
         add(botonFavoritos, gbc);
     }
 
@@ -194,6 +207,9 @@ public class BarraNavegacion extends JPanel {
     public JLabel getBotonHistorial() {
         return botonHistorial;
     }
+    public JLabel getBotonBusqueda() {
+        return botonBusqueda;
+    }
     public JLabel getBotonFavoritos() {
         return botonFavoritos;
     }
@@ -224,6 +240,17 @@ public class BarraNavegacion extends JPanel {
 
     public void alMostrarHistorial(ActionListener listener) {
         botonHistorial.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    listener.actionPerformed(null);
+                }
+            }
+        });
+    }
+
+    public void alMostrarMotorBusqueda(ActionListener listener) {
+        botonBusqueda.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {

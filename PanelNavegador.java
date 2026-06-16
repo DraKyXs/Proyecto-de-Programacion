@@ -11,10 +11,12 @@ public class PanelNavegador extends JPanel {
     private Favoritos favoritos;
     private EncabezadoPestana encabezadoPestana;
     private volatile boolean estaCargando = false;
+    private MotorBusqueda motorBusqueda;
 
      public PanelNavegador(main mainFrame, Favoritos favoritos) {
         this.mainFrame = mainFrame;
         this.favoritos = favoritos;
+        this.motorBusqueda = new MotorBusqueda();
         setLayout(new BorderLayout());
 
         barraNavegacion = new BarraNavegacion();
@@ -24,8 +26,20 @@ public class PanelNavegador extends JPanel {
         renderizador.aplicarTemaVisual(mainFrame.getFondoActual(), mainFrame.getTextoActual());
 
         renderizador.setNavegacionListener(nuevaRuta -> {
-            barraNavegacion.setTextoUrl(nuevaRuta);
-            procesarURLweb(nuevaRuta);
+            System.out.println("DEBUG: Navegación interceptada: " + nuevaRuta);
+            if (nuevaRuta.startsWith("NEWTAB:")) {
+                String urlReal = nuevaRuta.substring(7);
+                System.out.println("DEBUG: Abriendo en nueva pestaña: " + urlReal);
+                mainFrame.abrirNuevaPestana();
+                Component comp = mainFrame.getSistemaPestanas().getComponentAt(mainFrame.getSistemaPestanas().getSelectedIndex());
+                if (comp instanceof PanelNavegador) {
+                    ((PanelNavegador) comp).navegar_A(urlReal);
+                }
+            } else {
+                System.out.println("DEBUG: Navegación en pestaña actual: " + nuevaRuta);
+                barraNavegacion.setTextoUrl(nuevaRuta);
+                procesarURLweb(nuevaRuta);
+            }
         });
 
         add(renderizador, BorderLayout.CENTER);
@@ -48,6 +62,7 @@ public class PanelNavegador extends JPanel {
         barraNavegacion.alIrAdelante(e -> irAdelante());
         barraNavegacion.alRecargar(e -> recargarPagina());
         barraNavegacion.alMostrarHistorial(e -> mostrarHistorial());
+        barraNavegacion.alMostrarMotorBusqueda(e -> mostrarMotorBusqueda());
         barraNavegacion.alToggleFavorito(e -> toggleFavorito());
         barraNavegacion.getBotonFavoritos().addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -96,16 +111,24 @@ public class PanelNavegador extends JPanel {
     }
 
     private void procesarURLwebInterno(String texto, boolean agregarAlHistorial) {
-        
+
         String textoLimpio = texto.trim();
+        System.out.println("DEBUG: procesarURLwebInterno llamado con: " + textoLimpio);
+
+        if (textoLimpio.startsWith("search://")) {
+            System.out.println("DEBUG: Detectada búsqueda: " + textoLimpio);
+            procesarBusqueda(textoLimpio, agregarAlHistorial);
+            return;
+        }
+
         boolean esLocal = UtilidadesUrl.esRutaLocal(textoLimpio);
         boolean usarFallbackHttp = !esLocal && !UtilidadesUrl.tieneProtocoloHttp(textoLimpio);
         final String urlFinal = esLocal ? textoLimpio : UtilidadesUrl.agregarHttpsSiFalta(textoLimpio);
-        
+
        if (mainFrame.isModoOffline() && !UtilidadesUrl.esRutaLocal(textoLimpio)) {
             mainFrame.etiquetaEstado.setText("Modo offline — solo archivos locales");
             mainFrame.etiquetaEstado.setForeground(new Color(239, 68, 68));
-            JOptionPane.showMessageDialog(mainFrame, 
+            JOptionPane.showMessageDialog(mainFrame,
                 "Estás en modo offline.\nIngresa una ruta local, por ejemplo:\nC:\\paginas\\index.html");
             return;
         }
@@ -175,6 +198,39 @@ public class PanelNavegador extends JPanel {
             barraNavegacion.setTextoUrl(url);
             procesarURLweb(url);
         });
+    }
+
+    private void mostrarMotorBusqueda() {
+        System.out.println("DEBUG: mostrarMotorBusqueda() llamado");
+        String htmlBusqueda = motorBusqueda.obtenerPaginaBusqueda();
+        renderizador.cargarURL(htmlBusqueda, "search://index");
+        barraNavegacion.setTextoUrl("search://index");
+        indiceNavegacion++;
+        historialNavegacion.add("search://index");
+        historialNavegacion.subList(indiceNavegacion + 1, historialNavegacion.size()).clear();
+        actualizarBotones();
+        System.out.println("DEBUG: Motor de búsqueda mostrado");
+    }
+
+    private void procesarBusqueda(String urlBusqueda, boolean agregarAlHistorial) {
+        String consulta = "";
+        if (urlBusqueda.contains("?q=")) {
+            consulta = urlBusqueda.substring(urlBusqueda.indexOf("?q=") + 3);
+            consulta = java.net.URLDecoder.decode(consulta, java.nio.charset.StandardCharsets.UTF_8);
+        }
+
+        String htmlResultados = motorBusqueda.procesarBusqueda(consulta);
+        renderizador.cargarURL(htmlResultados, "search://results");
+
+        if (agregarAlHistorial) {
+            indiceNavegacion++;
+            historialNavegacion.add(urlBusqueda);
+            historialNavegacion.subList(indiceNavegacion + 1, historialNavegacion.size()).clear();
+        }
+
+        actualizarBotones();
+        mainFrame.etiquetaEstado.setText("Búsqueda completada");
+        mainFrame.etiquetaEstado.setForeground(new Color(16, 185, 129));
     }
 
     public void aplicarTemaVisual(Color fondo, Color texto) {
@@ -254,6 +310,7 @@ public class PanelNavegador extends JPanel {
             historial = null;
             favoritos = null;
             encabezadoPestana = null;
+            motorBusqueda = null;
         } catch (Exception e) {
             System.err.println("Error durante cleanup de PanelNavegador: " + e.getMessage());
         }
