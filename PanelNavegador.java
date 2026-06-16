@@ -118,7 +118,7 @@ public class PanelNavegador extends JPanel {
         if (comandoIA != null) {
             procesarComandoIA(comandoIA, agregarAlHistorial);
             return;
-        }
+        }    
 
         if (textoLimpio.startsWith("search://")) {
             System.out.println("DEBUG: Detectada búsqueda: " + textoLimpio);
@@ -130,18 +130,11 @@ public class PanelNavegador extends JPanel {
         boolean usarFallbackHttp = !esLocal && !UtilidadesUrl.tieneProtocoloHttp(textoLimpio);
         final String urlFinal = esLocal ? textoLimpio : UtilidadesUrl.agregarHttpsSiFalta(textoLimpio);
 
-        if (mainFrame.isModoOffline() && !esLocal) {
+       if (mainFrame.isModoOffline() && !UtilidadesUrl.esRutaLocal(textoLimpio)) {
             mainFrame.etiquetaEstado.setText("Modo offline — solo archivos locales");
             mainFrame.etiquetaEstado.setForeground(new Color(239, 68, 68));
-            JOptionPane.showMessageDialog(mainFrame, 
+            JOptionPane.showMessageDialog(mainFrame,
                 "Estás en modo offline.\nIngresa una ruta local, por ejemplo:\nC:\\paginas\\index.html");
-            return;
-        }
-        if (!mainFrame.isModoOffline() && esLocal) {
-            mainFrame.etiquetaEstado.setText("Modo offline — solo archivos locales");
-            mainFrame.etiquetaEstado.setForeground(new Color(239, 68, 68));
-            JOptionPane.showMessageDialog(mainFrame, 
-                "Estás en modo online.\nIngresa una url o busca una pagina, si quiere ver un archivo\n Cambia a modo Offline");
             return;
         }
 
@@ -332,8 +325,8 @@ public class PanelNavegador extends JPanel {
     if (t.startsWith("ai") || t.startsWith("gemini ") || 
         t.startsWith("asistente ") || t.startsWith("ia:")) {
         
-        if (t.startsWith("ai ")) return texto.substring(3).trim();
-        if (t.startsWith("ia ")) return texto.substring(3).trim();
+        if (t.startsWith("ai")) return texto.substring(3).trim();
+        if (t.startsWith("ia")) return texto.substring(3).trim();
         if (t.startsWith("gemini ")) return texto.substring(7).trim();
         if (t.startsWith("asistente ")) return texto.substring(10).trim();
     }
