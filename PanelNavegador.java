@@ -12,6 +12,8 @@ public class PanelNavegador extends JPanel {
     private EncabezadoPestana encabezadoPestana;
     private volatile boolean estaCargando = false;
     private MotorBusqueda motorBusqueda;
+    private PanelIA panelIA;
+    private boolean asistenteIAActivo = false;
 
      public PanelNavegador(main mainFrame, Favoritos favoritos) {
         this.mainFrame = mainFrame;
@@ -24,6 +26,8 @@ public class PanelNavegador extends JPanel {
 
         renderizador = new Renderizador();
         renderizador.aplicarTemaVisual(mainFrame.getFondoActual(), mainFrame.getTextoActual());
+        panelIA = new PanelIA();
+        panelIA.alEnviar(e -> enviarPeticionIA());
 
         renderizador.setNavegacionListener(nuevaRuta -> {
             System.out.println("DEBUG: Navegación interceptada: " + nuevaRuta);
@@ -46,6 +50,49 @@ public class PanelNavegador extends JPanel {
         configurarAcciones();
         actualizarBotones();
     }
+
+    public void mostrarAsistenteIA() {
+        if (!asistenteIAActivo) {
+            remove(renderizador);
+            add(panelIA, BorderLayout.CENTER);
+            asistenteIAActivo = true;
+            revalidate();
+            repaint();
+        }
+        if (encabezadoPestana != null) {
+            encabezadoPestana.setTitulo("Asistente IA");
+        }
+        mainFrame.etiquetaEstado.setText("Asistente IA");
+        mainFrame.etiquetaEstado.setForeground(new Color(59, 130, 246));
+    }
+
+    private void mostrarRenderizadorNormal() {
+        if (asistenteIAActivo) {
+            remove(panelIA);
+            add(renderizador, BorderLayout.CENTER);
+            asistenteIAActivo = false;
+            revalidate();
+            repaint();
+        }
+    }
+
+    private void enviarPeticionIA() {
+        String prompt = panelIA.getPeticionIA();
+        if (prompt.isBlank()) {
+            return;
+        }
+
+        mainFrame.etiquetaEstado.setText("Consultando Asistente IA...");
+        mainFrame.etiquetaEstado.setForeground(new Color(59, 130, 246));
+        panelIA.setRespuesta("<html><body><p>Consultando IA...</p></body></html>");
+
+        String htmlRespuesta = GeminiAPIClient.procesarComando(prompt);
+        panelIA.setRespuesta(htmlRespuesta);
+        panelIA.borrarPregunta();
+
+        mainFrame.etiquetaEstado.setText("200 OK - IA");
+        mainFrame.etiquetaEstado.setForeground(new Color(16, 185, 129));
+    } 
 
     public void setEncabezadoPestana(EncabezadoPestana encabezadoPestana) {
         this.encabezadoPestana = encabezadoPestana;
@@ -121,10 +168,13 @@ public class PanelNavegador extends JPanel {
         }    
 
         if (textoLimpio.startsWith("search://")) {
+            mostrarRenderizadorNormal();
             System.out.println("DEBUG: Detectada búsqueda: " + textoLimpio);
             procesarBusqueda(textoLimpio, agregarAlHistorial);
             return;
         }
+
+        mostrarRenderizadorNormal();
 
         boolean esLocal = UtilidadesUrl.esRutaLocal(textoLimpio);
         boolean usarFallbackHttp = !esLocal && !UtilidadesUrl.tieneProtocoloHttp(textoLimpio);
@@ -206,6 +256,7 @@ public class PanelNavegador extends JPanel {
     }
 
     private void mostrarMotorBusqueda() {
+        mostrarRenderizadorNormal();
         System.out.println("DEBUG: mostrarMotorBusqueda() llamado");
         String htmlBusqueda = motorBusqueda.obtenerPaginaBusqueda();
         renderizador.cargarURL(htmlBusqueda, "search://index");
@@ -312,6 +363,7 @@ public class PanelNavegador extends JPanel {
             removeAll();
             renderizador = null;
             barraNavegacion = null;
+            panelIA = null;
             historial = null;
             favoritos = null;
             encabezadoPestana = null;
@@ -333,42 +385,34 @@ public class PanelNavegador extends JPanel {
     return null;
 }
 
-private void procesarComandoIA(String comando, boolean agregarAlHistorial) {
-    estaCargando = true;
-    actualizarBotones();
-    mainFrame.etiquetaEstado.setText("Consultando Asistente IA...");
-    mainFrame.etiquetaEstado.setForeground(new Color(59, 130, 246));
+    private void procesarComandoIA(String comando, boolean agregarAlHistorial) {
+        mostrarAsistenteIA();
+        estaCargando = true;
+        actualizarBotones();
+        mainFrame.etiquetaEstado.setText("Consultando Asistente IA...");
+        mainFrame.etiquetaEstado.setForeground(new Color(59, 130, 246));
 
-    new Thread(() -> {
         try {
             String htmlRespuesta = GeminiAPIClient.procesarComando(comando);
+            panelIA.setRespuesta(htmlRespuesta);
+            barraNavegacion.setTextoUrl("Asistente IA: " + comando);
 
-            SwingUtilities.invokeLater(() -> {
-                renderizador.cargarURL(htmlRespuesta, "https://asistente.local");
-                barraNavegacion.setTextoUrl("Asistente IA: " + comando);
-                
-                if (agregarAlHistorial) {
-                    indiceNavegacion++;
-                    String urlFake = "ia://" + comando;
-                    historialNavegacion.add(urlFake);
-                    historialNavegacion.subList(indiceNavegacion + 1, historialNavegacion.size()).clear();
-                }
+            if (agregarAlHistorial) {
+                indiceNavegacion++;
+                String urlFake = "ia://" + comando;
+                historialNavegacion.add(urlFake);
+                historialNavegacion.subList(indiceNavegacion + 1, historialNavegacion.size()).clear();
+            }
 
-                actualizarTituloPestana("Asistente IA");
-                mainFrame.etiquetaEstado.setText("200 OK - IA");
-                mainFrame.etiquetaEstado.setForeground(new Color(16, 185, 129));
-
-                estaCargando = false;
-                actualizarBotones();
-            });
+            actualizarTituloPestana("Asistente IA");
+            mainFrame.etiquetaEstado.setText("200 OK - IA");
+            mainFrame.etiquetaEstado.setForeground(new Color(16, 185, 129));
         } catch (Exception e) {
-            SwingUtilities.invokeLater(() -> {
-                mainFrame.etiquetaEstado.setText("Error IA");
-                mainFrame.etiquetaEstado.setForeground(Color.RED);
-                estaCargando = false;
-                actualizarBotones();
-            });
+            mainFrame.etiquetaEstado.setText("Error IA");
+            mainFrame.etiquetaEstado.setForeground(Color.RED);
+        } finally {
+            estaCargando = false;
+            actualizarBotones();
         }
-    }).start();
-}
+    }
 }

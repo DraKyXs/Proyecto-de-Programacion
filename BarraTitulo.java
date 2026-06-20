@@ -36,7 +36,15 @@ public class BarraTitulo extends JPanel {
         btnOffline.setPreferredSize(new Dimension(45, 40));
         btnOffline.setHorizontalAlignment(SwingConstants.CENTER);
 
+        
+        JButton btnIA = crearBoton("IA", colorBarra);
+        btnIA.setFont(new Font("Arial", Font.BOLD, 13));
+        btnIA.setForeground(new Color(16, 168, 185));
+        btnIA.setToolTipText("Asistente IA");
+        btnIA.setPreferredSize(new Dimension(45, 40));
+
         aplicarEfectoHover(btnTema, new Color(209, 213, 219), new Color(26, 26, 26));
+        aplicarEfectoHover(btnIA, new Color(209, 213, 219), new Color(26, 26, 26));       
         aplicarEfectoHover(btnMin, new Color(209, 213, 219), new Color(26, 26, 26));
         aplicarEfectoHover(btnMax, new Color(209, 213, 219), new Color(26, 26, 26));
         aplicarEfectoHover(btnCerrar, new Color(232, 17, 35), Color.WHITE);
@@ -55,6 +63,7 @@ public class BarraTitulo extends JPanel {
         menuTemas.add(temaHacker);
 
         btnTema.addActionListener(e -> menuTemas.show(btnTema, 0, btnTema.getHeight()));
+        btnIA.addActionListener(e -> mostrarAsistenteIAEnPestanaActual(mainFrame));
         btnMin.addActionListener(e -> mainFrame.setState(JFrame.ICONIFIED));
         btnMax.addActionListener(e -> alternarMaximizado(mainFrame));
         btnCerrar.addActionListener(e -> System.exit(0));
@@ -87,6 +96,7 @@ public class BarraTitulo extends JPanel {
         
 
         buttonsPanel.add(btnTema);
+        buttonsPanel.add(btnIA);
         buttonsPanel.add(btnOffline);
         buttonsPanel.add(btnFavoritos);
         buttonsPanel.add(btnMin);
@@ -96,6 +106,19 @@ public class BarraTitulo extends JPanel {
         add(buttonsPanel, BorderLayout.EAST);
     }
 
+    private void mostrarAsistenteIAEnPestanaActual(main mainFrame) {
+        JTabbedPane tabs = mainFrame.getSistemaPestanas();
+        int indice = tabs.getSelectedIndex();
+        if (indice < 0) {
+            return;
+        }
+
+        Component componente = tabs.getComponentAt(indice);
+        if (componente instanceof PanelNavegador) {
+            ((PanelNavegador) componente).mostrarAsistenteIA();
+        }
+    }
+    
     private void cambiarTemaVisual(main frame, Color fondo, Color texto) {
         frame.setFondoActual(fondo);
         frame.setTextoActual(texto);

@@ -14,6 +14,7 @@ public class BarraNavegacion extends JPanel {
     private JLabel botonHistorial;
     private JLabel botonFavoritos;
     private JLabel botonBusqueda;
+    private JLabel btnIA;
     private DocumentListener documentListener;
     private boolean esFavorito = false;
 
@@ -80,6 +81,12 @@ public class BarraNavegacion extends JPanel {
         botonFavoritos.setCursor(new Cursor(Cursor.HAND_CURSOR));
         botonFavoritos.setPreferredSize(new Dimension(45, 35));
         botonFavoritos.setHorizontalAlignment(SwingConstants.CENTER);
+
+        btnIA = new JLabel("🤖");
+        btnIA.setToolTipText("Asistente IA");
+        btnIA.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnIA.setPreferredSize(new Dimension(45, 35));
+        btnIA.setHorizontalAlignment(SwingConstants.CENTER);
     }
 
     private void ordenarComponentes() {
@@ -114,8 +121,10 @@ public class BarraNavegacion extends JPanel {
         gbc.fill = GridBagConstraints.NONE;
         add(botonIr, gbc);
 
-        gbc.gridx = 7;
+        gbc.gridx = 8;
         add(botonFavoritos, gbc);
+
+        
     }
 
     private void configurarBuscador() {
@@ -212,6 +221,9 @@ public class BarraNavegacion extends JPanel {
     }
     public JLabel getBotonFavoritos() {
         return botonFavoritos;
+    }
+    public JLabel getBtnIA(){
+        return btnIA;
     }
 
     public void alBuscar(ActionListener listener) {
@@ -334,5 +346,16 @@ public class BarraNavegacion extends JPanel {
         for (MouseListener listener : boton.getMouseListeners()) {
             boton.removeMouseListener(listener);
         }
+    }
+
+    public void alMostrarIA(ActionListener listener){
+        btnIA.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    listener.actionPerformed(null);
+                }
+            }
+        });
     }
 }
