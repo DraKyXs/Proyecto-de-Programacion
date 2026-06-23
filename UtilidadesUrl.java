@@ -18,9 +18,9 @@ public class UtilidadesUrl {
     }
 
     public static URL construirURLValida(String textoURL) throws IOException {
-        String urlLimpia = textoURL.trim();
+    String urlLimpia = textoURL.trim();
 
-        int indiceProtocolo = urlLimpia.indexOf("://");
+    int indiceProtocolo = urlLimpia.indexOf("://");
     if (indiceProtocolo != -1) {
         int indicePrimerSlash = urlLimpia.indexOf("/", indiceProtocolo + 3);
         if (indicePrimerSlash == -1) {
@@ -29,28 +29,21 @@ public class UtilidadesUrl {
     }
 
     URL urlBase = new URL(urlLimpia);
-    String protocolo = urlBase.getProtocol();
-    String host = urlBase.getHost();
-    String archivo = urlBase.getFile();
-
-    if (archivo == null || archivo.isEmpty()) {
-        archivo = "/";
-    }
-
     int puerto = urlBase.getPort();
 
 
-    if (puerto == -1) {
-        if (protocolo.equalsIgnoreCase("http")) {
-            puerto = 80;
-        } else if (protocolo.equalsIgnoreCase("https")) {
-            puerto = 443;
+    if (puerto != -1) {
+        if (puerto != 80 && puerto != 8080 && puerto != 443
+            && puerto != 3000 && puerto != 5173) {
+            throw new IllegalArgumentException(
+                "Conexión a puerto " + puerto + " no soportada"
+            );
         }
-    }   
+    }
 
-    return new URL(protocolo, host, puerto, archivo);
+
+    return urlBase;
 }
-
     public static String obtenerDominio(String urlTexto) {
         try {
             URL url = new URL(urlTexto);

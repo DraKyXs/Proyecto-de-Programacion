@@ -118,6 +118,14 @@ public class Renderizador extends JPanel {
         htmlSeguro = htmlSeguro.replaceAll("(?is)<embed[^>]*>.*?</embed>", mensaje_detecta);
         htmlSeguro = htmlSeguro.replaceAll("(?is)<object[^>]*>.*?</object>", mensaje_detecta);
         
+        if (htmlSeguro.contains("<div id=\"root\"></div>")
+            || htmlSeguro.contains("<div id='root'></div>")
+            || htmlSeguro.contains("<app-root></app-root>")
+            || htmlSeguro.contains("<app-root/>")) {
+            htmlSeguro = "<html><body><h2 style='color:red;'>Pagina generada con JavaScript</h2>"
+            + "<p>Esta pagina requiere JavaScript para mostrar su contenido (React/Vue/Angular).</p>"
+            + "<p>Los navegadores sin motor JS como el de este proyecto no pueden renderizarla.</p></body></html>";
+}
         return htmlSeguro;
     }
 
