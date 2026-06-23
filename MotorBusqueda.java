@@ -142,6 +142,7 @@ public class MotorBusqueda {
             new ResultadoBusqueda("Viaje", "https://es.wikipedia.org/wiki/Viaje"),
             new ResultadoBusqueda("Pasaporte", "https://es.wikipedia.org/wiki/Pasaporte")
         ));
+
     }
 
     public String obtenerPaginaBusqueda() {

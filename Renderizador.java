@@ -138,19 +138,7 @@ public class Renderizador extends JPanel {
     private void manejarEventosEnlace(HyperlinkEvent e) {
         if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
             if (listener != null && !esImagenEnlazada(e.getSourceElement())) {
-                String destino = e.getDescription();
-
-                if (destino == null && e.getURL() != null) {
-                    destino = e.getURL().toString();
-                }
-
-                if (destino == null) {
-                    destino = "";
-                }
-
-                if (destino.startsWith("newtab://")) {
-                    destino = "NEWTAB:" + destino.substring(9);
-                }
+                String destino = resolverDestinoEnlace(e);
 
                 listener.navegar(destino);
             }
@@ -165,6 +153,28 @@ public class Renderizador extends JPanel {
             areaContenido.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             cambiarColorEnlace(e.getSourceElement(), Color.BLUE);
         }
+    }
+
+    private String resolverDestinoEnlace(HyperlinkEvent e) {
+        String descripcion = e.getDescription();
+
+        if (descripcion != null && descripcion.startsWith("newtab://")) {
+            return "NEWTAB:" + descripcion.substring("newtab://".length());
+        }
+
+        if (descripcion != null && descripcion.startsWith("search://")) {
+            return descripcion;
+        }
+
+        if (e.getURL() != null) {
+            return e.getURL().toString();
+        }
+
+        if (descripcion != null) {
+            return descripcion;
+        }
+
+        return "";
     }
 
     private boolean esImagenEnlazada(Element elementoHtml) {
