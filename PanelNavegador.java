@@ -180,11 +180,18 @@ public class PanelNavegador extends JPanel {
         boolean usarFallbackHttp = !esLocal && !UtilidadesUrl.tieneProtocoloHttp(textoLimpio);
         final String urlFinal = esLocal ? textoLimpio : UtilidadesUrl.agregarHttpsSiFalta(textoLimpio);
 
-       if (mainFrame.isModoOffline() && !UtilidadesUrl.esRutaLocal(textoLimpio)) {
+       if (mainFrame.isModoOffline() && !esLocal) {
             mainFrame.etiquetaEstado.setText("Modo offline — solo archivos locales");
             mainFrame.etiquetaEstado.setForeground(new Color(239, 68, 68));
             JOptionPane.showMessageDialog(mainFrame,
                 "Estás en modo offline.\nIngresa una ruta local, por ejemplo:\nC:\\paginas\\index.html");
+            return;
+        }
+        if (!mainFrame.isModoOffline() && esLocal) {
+            mainFrame.etiquetaEstado.setText("Modo offline — solo archivos locales");
+            mainFrame.etiquetaEstado.setForeground(new Color(239, 68, 68));
+            JOptionPane.showMessageDialog(mainFrame, 
+                "Estás en modo online.\nIngresa una url o busca una pagina, si quiere ver un archivo\n Cambia a modo Offline");
             return;
         }
 
